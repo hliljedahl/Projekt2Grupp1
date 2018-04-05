@@ -4,7 +4,7 @@
 
     // Prepare the SQL statement
 
-
+//dfgdfgfdg
 
     $sql = "DELETE FROM data01 WHERE id=69";
 
