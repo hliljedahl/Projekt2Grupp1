@@ -16,8 +16,8 @@
     $sql_remove = $numrows - $max;
 
     //System Print
-    echo nl2br ("\n" . $numrows);
-    echo nl2br ("\n" . $sql_remove);
+    echo nl2br ("\n" . $numrows. "\n");
+    echo nl2br ("\n" . $sql_remove. "\n");
 
 
     //If the number of rows is more then..
@@ -30,7 +30,7 @@
         //Delete unwanted rows
         if (mysqli_query($conn, $sql)) {
 
-            echo "Record deleted successfully \n";
+            echo "Record deleted successfully";
         }
         else {
 
