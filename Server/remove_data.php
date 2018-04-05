@@ -4,9 +4,9 @@
 
     // Prepare the SQL statement
 
-    
 
-    $sql = "DELETE FROM MyGuests WHERE id=3";
+
+    $sql = "DELETE FROM data01 WHERE id=69";
 
     //$SQL = "INSERT INTO yourdatabasename.data (time,temp,humi,test) VALUES ('$dateS','".$_GET["temp"]."','".$_GET["humi"]."','".$_GET["test"]."')";
     //$sql_in = "INSERT INTO test (time,temp,humi,id) VALUES ('$dateS','33.2','13.3','4')";
