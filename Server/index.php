@@ -47,7 +47,7 @@
 
           <?php
 
-              $sql = "SELECT id, temp, time, humi FROM data01 LIMIT 10";
+              $sql = "SELECT id, temp, time, humi FROM data01 LIMIT 100";
               //"SELECT * FROM test ORDER BY test DESC"
               // Retrieve all records and display them
               $result = mysqli_query($conn,$sql);

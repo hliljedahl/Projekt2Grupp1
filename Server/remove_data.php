@@ -3,32 +3,39 @@
     include("connect.php");
 
     // Prepare the SQL statement
+    //Count thee number of rows
+    $sql_count = "SELECT * FROM data01";
+    $sql_res = mysqli_query($conn, $sql_count);
+    $numrows = mysqli_num_rows($sql_res);
+    $sql_remove = $numrows - 10;
+    echo nl2br ("\n" . $numrows);
+    echo nl2br ("\n" . $sql_remove);
 
-//dfgdfgfdg
 
-    $sql = "DELETE FROM data01 WHERE id=69";
+    //If the number of rows is more then..
+    if($sql_remove > 0){
 
-    //$SQL = "INSERT INTO yourdatabasename.data (time,temp,humi,test) VALUES ('$dateS','".$_GET["temp"]."','".$_GET["humi"]."','".$_GET["test"]."')";
-    //$sql_in = "INSERT INTO test (time,temp,humi,id) VALUES ('$dateS','33.2','13.3','4')";
-    //$sql_in = "INSERT INTO data01 (time,temp,humi,id) VALUES ('$dateS','".$_GET["temp"]."','".$_GET["humi"]."','".$_GET["id"]."')";
+        //Prepare the SQL statement
+        //$sql_top = "SELECT TOP $sql_remove * FROM data01";
+        $sql = "DELETE FROM data01 LIMIT $sql_remove";
 
-    if (mysqli_query($conn, $sql)) {
+        //Delete unwanted rows
+        if (mysqli_query($conn, $sql)) {
 
-        echo "Record deleted successfully";
+            echo "Record deleted successfully \n";
+        }
+        else {
+
+            echo "Error deleting record: " . mysqli_error($conn);
+
+        }
+    }else {
+
+        echo nl2br ("\n Nothing to delete \n");
+
     }
-    else {
 
-        echo "Error deleting record: " . mysqli_error($conn);
+    //http://www.lonelycircuits.se/data/add_data.php?temp=XX&humi=XX&id=XX
+    //http://www.lonelycircuits.se/data/add_data.php?temp=24&humi=12&id=8
 
-    }
-
-
-    //http://www.lonelycircuits.se/add_data.php?temp=XX&humi=XX&id=XX
-
-
-    // Execute SQL statement
-    mysqli_query($conn,$sql_in);
-
-    // Go to the review_data.php (optional)
-    //header("Location: index.php");
 ?>
