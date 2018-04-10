@@ -41,13 +41,12 @@
             <td class="table_titles">Date and Time</td>
             <td class="table_titles">Temperature</td>
             <td class="table_titles">Humidity</td>
-            <td class="table_titles">ID</td>
           </tr>
 
 
           <?php
 
-              $sql = "SELECT id, temp, time, humi FROM data01 LIMIT 100";
+              $sql = "SELECT * FROM data01 LIMIT 100";
               //"SELECT * FROM test ORDER BY test DESC"
               // Retrieve all records and display them
               $result = mysqli_query($conn,$sql);
@@ -73,7 +72,6 @@
                   echo '   <td'.$css_class.'>'.$row["time"].'</td>';
                   echo '   <td'.$css_class.'>'.$row["temp"].'</td>';
                   echo '   <td'.$css_class.'>'.$row["humi"].'</td>';
-                  echo '   <td'.$css_class.'>'.$row["id"].'</td>';
                   echo '</tr>';
               }
           ?>

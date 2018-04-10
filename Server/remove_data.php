@@ -5,7 +5,7 @@
 
 
     //MAX NUMBER OF ROWS
-    $max = 10;
+    $max = 2;
 
 
     // Prepare the SQL statement
