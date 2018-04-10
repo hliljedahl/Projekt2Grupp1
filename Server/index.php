@@ -37,14 +37,22 @@
 
     <table border="0" cellspacing="0" cellpadding="4">
       <tr>
-
-            <td class="table_titles">Date and Time</td>
-            <td class="table_titles">Temperature</td>
-            <td class="table_titles">Humidity</td>
-          </tr>
-
-
           <?php
+              $sql_dev = "SELECT * FROM dev01";
+              $dev_q = mysqli_query($conn,$sql_dev);
+              while( $dev_list = mysqli_fetch_array($dev_q) ){
+                  echo '<td class="table_titles">'.$dev_list["Devices"].'</td>';
+              }
+              #<td class="table_titles">Date and Time</td>
+              #<td class="table_titles">Temperature</td>
+              #<td class="table_titles">Humidity</td>
+
+          #
+
+          echo '</tr>';
+
+
+          #<?php
 
               $sql = "SELECT * FROM data01 LIMIT 100";
               //"SELECT * FROM test ORDER BY test DESC"
@@ -69,9 +77,16 @@
                   $oddrow = !$oddrow;
 
                   echo '<tr>';
-                  echo '   <td'.$css_class.'>'.$row["time"].'</td>';
-                  echo '   <td'.$css_class.'>'.$row["temp"].'</td>';
-                  echo '   <td'.$css_class.'>'.$row["humi"].'</td>';
+                  $dev_q2 = mysqli_query($conn,$sql_dev);
+                  while( $dev_list = mysqli_fetch_array($dev_q2) ){
+                      #echo '<td class="table_titles">'.$dev_list["Devices"].'</td>';
+                      $dev_name = $dev_list["Devices"];
+                      #echo $dev_name;
+                      echo '   <td'.$css_class.'>'.$row[$dev_name].'</td>';
+                  }
+                  #echo '   <td'.$css_class.'>'.$row["time"].'</td>';
+                  #echo '   <td'.$css_class.'>'.$row["temp"].'</td>';
+                  #echo '   <td'.$css_class.'>'.$row["humi"].'</td>';
                   echo '</tr>';
               }
           ?>

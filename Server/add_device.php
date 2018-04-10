@@ -3,18 +3,16 @@
     include("connect.php");
     include("devices.php");
 
-    //$SQL = "INSERT INTO yourdatabasename.data (time,temp,humi,test) VALUES ('$dateS','".$_GET["temp"]."','".$_GET["humi"]."','".$_GET["test"]."')";
-    //$sql_in = "INSERT INTO test (time,temp,humi,id) VALUES ('$dateS','33.2','13.3','4')";
+    $columnName = $_GET["dev"];
+    echo "Added: ";
+    echo $columnName;
 
+    //Add new device ID in Dev01
+    $sql_in = "INSERT INTO dev01 (Devices) VALUES ('$columnName')";
+    //Add new column with the ID from Dev01
+    $sql_new = "ALTER TABLE  data01 ADD $columnName double NOT NULL";
 
-    $columnName = ".$_GET["dev"]."
-    $sql_in = "INSERT INTO dev01 (devices) VALUES ('".$_GET["dev"]."')";
-
-
-    $sql_new = "ALTER TABLE  `data01` ADD  `$columnName` double NOT NULL";
-
-    //http://www.lonelycircuits.se/add_data.php?temp=XX&humi=XX&id=XX
-
+    //http://www.lonelycircuits.se/data/add_device.php?dev=XX
 
     // Execute SQL statement
     mysqli_query($conn,$sql_in);
