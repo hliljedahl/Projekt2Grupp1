@@ -1,8 +1,8 @@
 /* 
- * File:   config.h
+ * File:   config_PWM_ADC.h
  * Author: arvidpersson
  *
- * Created on April 11, 2018, 1:31 PM
+ * Created on April 11, 2018, 2:57 PM
  */
 
 #pragma config FOSC = HS        // Oscillator Selection bits (HS oscillator: High-speed crystal/resonator on RA6/OSC2/CLKOUT and RA7/OSC1/CLKIN)

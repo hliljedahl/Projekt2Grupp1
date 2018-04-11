@@ -5,8 +5,12 @@
 
 
     //MAX NUMBER OF ROWS
-    $max = 2;
-
+    if($_GET["max"]){
+        $max = $_GET["max"];
+    }
+    else{
+        $max = 10;
+    }
 
     // Prepare the SQL statement
     //Count thee number of rows
@@ -14,6 +18,10 @@
     $sql_res = mysqli_query($conn, $sql_count);
     $numrows = mysqli_num_rows($sql_res);
     $sql_remove = $numrows - $max;
+
+    if($_GET["remove"]){
+        $sql_remove = $_GET["remove"];
+    }
 
     //System Print
     echo nl2br ("\n" . $numrows. "\n");
