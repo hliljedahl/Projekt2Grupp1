@@ -1,8 +1,8 @@
 /* 
- * File:   temp_1.c
+ * File:   main_PWM_ADC.c
  * Author: arvidpersson
  *
- * Created on April 8, 2018, 10:37 PM
+ * Created on April 11, 2018, 2:58 PM
  */
 
 void __delay_s(int d);
@@ -28,39 +28,41 @@ PWM2_Start();
 long freq;
 
 void main(){  
-    
-    unsigned int i = 0;
-
-    PWM1_Init(5000);
-    PWM2_Init(5000);
-
+ 
     ANSELbits.ANS1 = 1; //AR1 -> analog
     
-    TRISAbits.TRISA1 = 1;   //AR1 -> ingånh(pot)
+    TRISAbits.TRISA1 = 1;   //AR1 -> ingång(pot)
     TRISCbits.TRISC1 = 0;   //RC1 -> PMW(led)
     TRISCbits.TRISC2 = 0;   //RC2 -> PWM(led))
     
     ADCON0 = 0b11000101;    //int osc(max 500kHz), AN1(ADC), ADON
-    ADCON1 = 0b10000000;    //2 MSB -> ADRESLH, 8 LSB -> ADRESL  
-    PORTCbits.RC1 = 0;  //RC1 -> 0(av)
-    PORTCbits.RC2 = 0;  //RC2 -> 0(av))
-    //TRISCbits.TRISC6 = 1;   //RX
-    //TRISCbits.TRISC7 = 0;   //TX
-    TXSTAbits.TXEN = 1; //startaR EUSART
-    TXSTAbits.SYNC = 0; //asynchronous
-    RCSTAbits.SPEN = 1; //auto konfig av TX pin
-    BAUDCTLbits.BRG16 = 1;
-    TXSTAbits.BRGH = 1;
+    ADCON1 = 0b10000000;    //2 MSB -> ADRESLH, 8 LSB -> ADRESL
     
-    TXREG = 0;
+    PWM1_Init(5000);
+    PWM2_Init(5000);
+    
+    PORTCbits.RC1 = 0;  //RC1 -> 0(av)
+    PORTCbits.RC2 = 0;  //RC2 -> 0(av)
+    
+    PWM1_Duty(0);
+    PWM2_Duty(0);
+    PWM1_Start();
+    PWM2_Start();
     
     while(true){
-        TXREG = 'A';
-        while(!TRMT);
+        __delay_ms(2);
+        ADCON0bits.GO_DONE = 1;
+        while(ADCON0bits.GO_nDONE){}
+        if(ADRESL > 2){
+            PWM1_Duty(ADRESL);
+            PWM2_Duty(ADRESL);
+        }else{
+            PWM1_Duty(0);
+            PWM2_Duty(0);
+        }
     }
     
 }
-
 
 int PWM_Max_Duty(){
   return(_XTAL_FREQ/(freq*TMR2PRESCALE));
