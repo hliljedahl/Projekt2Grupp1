@@ -9,6 +9,8 @@
 
     //$SQL = "INSERT INTO yourdatabasename.data (time,temp,humi,test) VALUES ('$dateS','".$_GET["temp"]."','".$_GET["humi"]."','".$_GET["test"]."')";
     //$sql_in = "INSERT INTO test (time,temp,humi,id) VALUES ('$dateS','33.2','13.3','4')";
+    $sql_date = "INSERT INTO data01 (time) VALUES ('$dateS')";
+
     $sql_in = "INSERT INTO data01 (time,temp,humi) VALUES ('$dateS','".$_GET["temp"]."','".$_GET["humi"]."')";
 
 
@@ -17,7 +19,7 @@
 
 
     // Execute SQL statement
-    mysqli_query($conn,$sql_in);
+    mysqli_query($conn,$sql_date);
 
     // Go to the review_data.php (optional)
     //header("Location: index.php");
