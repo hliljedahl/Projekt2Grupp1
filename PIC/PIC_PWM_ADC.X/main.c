@@ -1,12 +1,12 @@
 /* 
- * File:   temp_1.c
+ * File:   main.c
  * Author: arvidpersson
  *
- * Created on April 8, 2018, 10:37 PM
+ * Created on April 11, 2018, 1:31 PM
  */
 
-void __delay_s(int d);
-
+__delay_s(int d);
+Init_PWM(int P1, int P2,int fre1, int fre2);
 PWM1_Init(long fre);
 PWM2_Init(long fre);
 PWM1_Duty(unsigned int duty);
@@ -14,6 +14,7 @@ PWM2_Duty(unsigned int duty);
 PWM_Max_Duty();
 PWM1_Start();
 PWM2_Start();
+Init_ADC();
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,37 +31,44 @@ long freq;
 void main(){  
     
     unsigned int i = 0;
-
-    PWM1_Init(5000);
-    PWM2_Init(5000);
-
-    ANSELbits.ANS1 = 1; //AR1 -> analog
     
-    TRISAbits.TRISA1 = 1;   //AR1 -> ingånh(pot)
-    TRISCbits.TRISC1 = 0;   //RC1 -> PMW(led)
-    TRISCbits.TRISC2 = 0;   //RC2 -> PWM(led))
-    
-    ADCON0 = 0b11000101;    //int osc(max 500kHz), AN1(ADC), ADON
-    ADCON1 = 0b10000000;    //2 MSB -> ADRESLH, 8 LSB -> ADRESL  
-    PORTCbits.RC1 = 0;  //RC1 -> 0(av)
-    PORTCbits.RC2 = 0;  //RC2 -> 0(av))
-    //TRISCbits.TRISC6 = 1;   //RX
-    //TRISCbits.TRISC7 = 0;   //TX
-    TXSTAbits.TXEN = 1; //startaR EUSART
-    TXSTAbits.SYNC = 0; //asynchronous
-    RCSTAbits.SPEN = 1; //auto konfig av TX pin
-    BAUDCTLbits.BRG16 = 1;
-    TXSTAbits.BRGH = 1;
-    
-    TXREG = 0;
+    Init_ADC(); //init ADC(pin AR1)
+    Init_PWM(1,0,5000,5000); //int PWM RC1, freq -> 5000
     
     while(true){
-        TXREG = 'A';
-        while(!TRMT);
+        __delay_ms(1);
+        ADCON0bits.GO_DONE = 1;
+        while(ADCON0bits.GO_nDONE){}
+        if(ADRESL > 4){
+            PWM1_Duty(ADRESL);
+        }else{
+            PWM1_Duty(0);
+        }
     }
-    
 }
 
+Init_PWM(int P1, int P2,int fre1, int fre2){
+    if(P1){
+        TRISCbits.TRISC1 = 0;   //RC1 -> PMW(led)
+        PWM1_Init(fre1);
+        PWM1_Duty(0);
+        PWM1_Start();
+    }
+    
+    if(P2){  
+        TRISCbits.TRISC2 = 0;   //RC2 -> PWM(led)) 
+        PWM1_Init(fre2);
+        PWM2_Duty(0);
+        PWM2_Start();
+    }
+}
+
+Init_ADC(){
+    ANSELbits.ANS1 = 1; //AR1 -> analog
+    TRISAbits.TRISA1 = 1;   //AR1 -> ingång(pot)
+    ADCON0 = 0b11000101;    //int osc(max 500kHz), AN1(ADC), ADON
+    ADCON1 = 0b10000000;    //2 MSB -> ADRESLH, 8 LSB -> ADRESL  
+}
 
 int PWM_Max_Duty(){
   return(_XTAL_FREQ/(freq*TMR2PRESCALE));
