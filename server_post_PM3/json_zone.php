@@ -27,6 +27,7 @@ if ($result = mysqli_query($conn, $sql))
 	echo json_encode($resultArray);
 }
 
+
 // Close connections
 mysqli_close($conn);
 ?>

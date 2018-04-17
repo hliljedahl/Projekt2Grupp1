@@ -24,11 +24,11 @@
     //Add new column with the ID from Dev01
     //$sql_rem = "ALTER TABLE  data01 DROP $zoneRemove";
 
-    //http://www.lonelycircuits.se/data/remove_device.php?remove=XX
+    //http://www.lonelycircuits.se/data/remove_zone.php?remove=XX
 
     // Execute SQL statement
     if(mysqli_query($conn,$sql_z_del)){
-        
+
         echo "Zone: ";
         echo $zoneRemove;
         echo " removed";

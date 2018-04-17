@@ -33,7 +33,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let jsonUrlString = "http://lonelycircuits.se/data/service.php"
+        let jsonUrlString = "http://lonelycircuits.se/data/json.php"
         guard let url = URL(string: jsonUrlString) else { return }
         
         URLSession.shared.dataTask(with: url) { (data, response, err) in

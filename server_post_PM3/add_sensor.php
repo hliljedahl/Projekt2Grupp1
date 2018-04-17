@@ -35,6 +35,6 @@
 
     }
 
-    //http://www.lonelycircuits.se/data/add_zone.php?zone="XX"
+    //http://www.lonelycircuits.se/data/add_sensor.php?zone="XX"&name="YY"&type="ZZ"
 
 ?>
