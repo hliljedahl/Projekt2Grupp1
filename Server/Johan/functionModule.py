@@ -1,4 +1,4 @@
-import sre, urllib2, sys, BaseHTTPServer
+import sre, urllib2, sys, BaseHTTPServer,re
 
 def parseAddress(input):
         if input[:7] != "http://":
