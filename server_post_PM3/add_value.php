@@ -11,7 +11,7 @@
 
     // Prepare the SQL statement
     date_default_timezone_set('Europe/Stockholm');
-    $dateS = date('Y-m-d h:i:s', time());
+    $dateS = date('Ymdhi', time());
 
 
     $sql_sensor = "SELECT * FROM sensors WHERE name = '$sensor_name'";
@@ -51,6 +51,6 @@
 
     }
 
-    //http://www.lonelycircuits.se/data/add_zone.php?zone="XX"
+    //http://www.lonelycircuits.se/data/add_value.php?name="XX"&value=YY
 
 ?>

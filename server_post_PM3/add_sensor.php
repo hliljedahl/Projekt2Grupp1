@@ -6,6 +6,10 @@
     $zone_name = $_GET["zone"];
     $type_name = $_GET["type"];
 
+    echo $zone_name;
+    echo "      ";
+
+
     //echo $sensor_name;
     //echo $zone_name;
     //echo $type_name;
@@ -15,11 +19,17 @@
     $sql_zone = "SELECT * FROM zone WHERE room_des = '$zone_name'";
     $zone = mysqli_query($conn,$sql_zone);
     $zone_id = mysqli_fetch_array($zone);
+    $ipadress = "192.168.1.184";
     //echo $zone_id["id"];
-
+    echo $zone_id;
+    echo "      ";
     $zone_id_var = $zone_id["id"];
+    echo $zone_id_var;
+    echo "      ";
+    $sql_sensor = "INSERT INTO sensors (name, zone_id, type, ipadress) VALUES ($sensor_name, $zone_id_var, $type_name, '$ipadress')";
 
-    $sql_sensor = "INSERT INTO sensors (name, zone_id, type) VALUES ($sensor_name, $zone_id_var, $type_name)";
+    echo $sql_sensor;
+    echo "      ";
 
     if(mysqli_query($conn,$sql_sensor)){
 
@@ -35,6 +45,6 @@
 
     }
 
-    //http://www.lonelycircuits.se/data/add_sensor.php?zone="XX"&name="YY"&type="ZZ"
+    //http://www.lonelycircuits.se/data/add_sensor.php?zone=XXX&name="YYY"&type="ZZZ"
 
 ?>
