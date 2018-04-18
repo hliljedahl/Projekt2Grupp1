@@ -1,10 +1,5 @@
 import sre, urllib2, sys, BaseHTTPServer
 
-
-
-
-
-
 def parseAddress(input):
         if input[:7] != "http://":
                 if input.find("://") != -1:
