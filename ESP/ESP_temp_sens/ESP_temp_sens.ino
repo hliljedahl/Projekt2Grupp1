@@ -87,7 +87,6 @@ void loop() {
     client.print(":i:");
     client.print(t_val[2]);
     client.print(":");
-    client.print("<button>");
     client.print("</b>");
     client.println("<br><br>");
     delay(1);
@@ -101,26 +100,6 @@ void loop() {
     }
   }
 }
-
-/*String print_page() {
-  get_val(t_val);
-  String page =
-    String("HTTP/1.1 200 OK") +
-    "Content-Type: text/html" +
-    "" +
-    "<!DOCTYPE HTML>" +
-    "<html>" +
-    "<b>" +
-    "t:" + String(t_val[1]) +
-    ":h:" + String(t_val[0]) +
-    ":i:" + String(t_val[2]) +
-    ":" +
-    "</b>" +
-    "<br><br>";
-    
-    return page;
-}
-*/
 
 void get_val(float t_val[]) {
   if (isnan(t_val[0]) || isnan(t_val[1])) {
