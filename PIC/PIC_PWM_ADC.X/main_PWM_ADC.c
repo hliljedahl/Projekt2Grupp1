@@ -14,6 +14,7 @@ PWM2_Duty(unsigned int duty);
 PWM_Max_Duty();
 PWM1_Start();
 PWM2_Start();
+Init_ADC();
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,15 +29,11 @@ PWM2_Start();
 long freq;
 
 void main(){  
- 
-    ANSELbits.ANS1 = 1; //AR1 -> analog
     
-    TRISAbits.TRISA1 = 1;   //AR1 -> ingång(pot)
+    Init_ADC();
+    
     TRISCbits.TRISC1 = 0;   //RC1 -> PMW(led)
     TRISCbits.TRISC2 = 0;   //RC2 -> PWM(led))
-    
-    ADCON0 = 0b11000101;    //int osc(max 500kHz), AN1(ADC), ADON
-    ADCON1 = 0b10000000;    //2 MSB -> ADRESLH, 8 LSB -> ADRESL
     
     PWM1_Init(5000);
     PWM2_Init(5000);
@@ -62,6 +59,13 @@ void main(){
         }
     }
     
+}
+
+Init_ADC(){
+    ANSELbits.ANS1 = 1; //AR1 -> analog 
+    TRISAbits.TRISA1 = 1;   //AR1 -> ingång(pot)   
+    ADCON0 = 0b11000101;    //int osc(max 500kHz), AN1(ADC), ADON
+    ADCON1 = 0b10000000;    //2 MSB -> ADRESLH, 8 LSB -> ADRESL  
 }
 
 int PWM_Max_Duty(){
