@@ -24,7 +24,6 @@ void loop() {
 
 float get_val(float val[]) {
   if (isnan(val[0]) || isnan(val[1])) {
-    val[0] = val[1] = val[2] = -1; 
     return;
   }
   val[0] = dht.readHumidity();

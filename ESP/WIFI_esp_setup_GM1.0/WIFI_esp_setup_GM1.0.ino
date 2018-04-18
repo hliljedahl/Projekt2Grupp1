@@ -27,7 +27,7 @@ String html_msg_page[3] = {};
 boolean setup_flag = true;
 
 DHT dht(DHTPIN, DHTTYPE);
-//WiFiServer server(80);
+WiFiServer WIFIserver(80);
 ESP8266WebServer APserver(80);
 
 void create_page(String c_p[]);
@@ -43,27 +43,29 @@ void setup(void) {
   while (setup_flag) {
     APserver.handleClient();
   }
-  //wifiConfig(wifi.ssid, wifi.password);
+  wifiConfig(wifi.ssid, wifi.password);
 }
 
 void loop(void) {
   Serial.println("Connected to wifi");
+  delay(2000);
+  APserver.stop();
   /*String wifi_s = wifi.ssid; 
   String wifi_p = wifi.password; 
   Serial.print(wifi_s);
   Serial.print(" ");
   Serial.println(wifi_p);*/
-  /*const char *wifi_s = "0010.0100";
+  const char *wifi_s = "0010.0100";
   const char *wifi_p = "summit14";
   while (true) {
-    WiFiClient client = server.available();
+    WiFiClient client = WIFIserver.available();
     if (WiFi.status() != WL_CONNECTED) {
       Serial1.println("No wifi");
       WiFi.begin(wifi_s,wifi_p);
       while (WiFi.status() != WL_CONNECTED) {
         delay(500);
       }
-      server.begin();
+      WIFIserver.begin();
       delay(100);
     }
 
@@ -106,7 +108,7 @@ void loop(void) {
       previousMillis = currentMillis;
       break;
     }
-  }*/
+  }
 }
 
 void get_val(float t_val[]) {
@@ -133,7 +135,7 @@ void APconfig() {
   Serial.println("AP configured!");
 }
 
-/*void wifiConfig(String wifi_ssid, String wifi_password) {
+void wifiConfig(String wifi_ssid, String wifi_password) { 
   Serial.print("Connecting to: ");
   Serial.println(wifi_ssid);
   WiFi.begin(wifi_ssid.c_str(), wifi_password.c_str());
@@ -145,7 +147,7 @@ void APconfig() {
   Serial.println("WiFi connected");
 
   // Start the server
-  server.begin();
+  WIFIserver.begin();
   Serial.println("Server started");
 
   // Print the IP address
@@ -153,7 +155,7 @@ void APconfig() {
   Serial.print("http://");
   Serial.print(WiFi.localIP());
   Serial.println("/");
-}*/
+}
 
 void saveSetting(String use, String pas) {
   /*
