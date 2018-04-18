@@ -15,17 +15,19 @@ struct WebsiteDescription: Decodable {
 }
 
 struct Course: Decodable {
-    let time: String?
-    let temp: String?
-    let humi: String?
-    let temp2: String?
-    
+	let sensor_id: String
+	let timestmp: String
+	let value: String
+	
+	
 //    init(json: [String: Any]) {
 //        id = json["id"] as? Int ?? -1
 //        name = json["name"] as? String ?? ""
 //        link = json["link"] as? String ?? ""
 //        imageUrl = json["imageUrl"] as? String ?? ""
 //    }
+	
+	
 }
 
 class ViewController: UIViewController {
@@ -33,7 +35,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let jsonUrlString = "http://lonelycircuits.se/data/json.php"
+        let jsonUrlString = "http://lonelycircuits.se/data/json_data.php"
         guard let url = URL(string: jsonUrlString) else { return }
         
         URLSession.shared.dataTask(with: url) { (data, response, err) in
