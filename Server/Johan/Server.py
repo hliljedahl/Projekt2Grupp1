@@ -30,6 +30,3 @@ sleep(1)
 TempSend = urllib2.urlopen(urlTemp)
 TempSend.close()
 sleep(1)
-
-print urlTemp
-print urlHumi
