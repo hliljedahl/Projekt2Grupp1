@@ -91,12 +91,12 @@ class SecondViewController: UIViewController {
 			if currentTime ==  Int(dataVal[val-1].timestmp){
 				placeArr.append(place)
 			}
-			else if currentTime!+1 ==  Int(dataVal[val-1].timestmp){
+			/*else if currentTime!+1 ==  Int(dataVal[val-1].timestmp){
 				placeArr.append(place)
 			}
 			else if currentTime!-1 ==  Int(dataVal[val-1].timestmp){
 				placeArr.append(place)
-			}
+			}*/
 			else {
 				place = place + 1
 				placeArr.append(place)
