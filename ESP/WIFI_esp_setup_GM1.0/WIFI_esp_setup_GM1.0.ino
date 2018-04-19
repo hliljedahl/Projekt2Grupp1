@@ -33,6 +33,7 @@ ESP8266WebServer APserver(80);
 void create_page(String c_p[]);
 void create_login_msg(String m_p[]);
 void wifiConfig(String wifi_ssid, String wifi_password);
+void print_pas_use(String wifi_use, String wifi_pas);
 void saveSetting(String ssid, String password);
 
 void setup(void) {
@@ -50,18 +51,18 @@ void loop(void) {
   Serial.println("Connected to wifi");
   delay(2000);
   APserver.stop();
-  /*String wifi_s = wifi.ssid; 
-  String wifi_p = wifi.password; 
-  Serial.print(wifi_s);
-  Serial.print(" ");
-  Serial.println(wifi_p);*/
+  /*String wifi_s = wifi.ssid;
+    String wifi_p = wifi.password;
+    Serial.print(wifi_s);
+    Serial.print(" ");
+    Serial.println(wifi_p);*/
   const char *wifi_s = "0010.0100";
   const char *wifi_p = "summit14";
   while (true) {
     WiFiClient client = WIFIserver.available();
     if (WiFi.status() != WL_CONNECTED) {
       Serial1.println("No wifi");
-      WiFi.begin(wifi_s,wifi_p);
+      WiFi.begin(wifi_s, wifi_p);
       while (WiFi.status() != WL_CONNECTED) {
         delay(500);
       }
@@ -125,8 +126,6 @@ void APconfig() {
   delay(250);
   WiFi.softAP(esp_ssid, esp_password);
   delay(250);
-  IPAddress myIP = WiFi.softAPIP();
-  Serial.println("HotSpt IP:");
   Serial.println(myIP);
   APserver.on("/", HTTP_GET, handleRoot);
   APserver.on("/login", HTTP_POST, handleLogin);
@@ -135,7 +134,7 @@ void APconfig() {
   Serial.println("AP configured!");
 }
 
-void wifiConfig(String wifi_ssid, String wifi_password) { 
+void wifiConfig(String wifi_ssid, String wifi_password) {
   Serial.print("Connecting to: ");
   Serial.println(wifi_ssid);
   WiFi.begin(wifi_ssid.c_str(), wifi_password.c_str());
@@ -187,6 +186,14 @@ void create_login_msg(String m_p[]) {
   m_p[1] = "<p><b> Username: </b>" + APserver.arg("username") + "</p>";
   m_p[2] = "<p><b> Password: </b>" + APserver.arg("password") + "</p>";
   saveSetting(APserver.arg("username"), APserver.arg("password"));
+  print_pas_use(APserver.arg("username"),APserver.arg("password"));
+}
+
+void print_pas_use(String wifi_use, String wifi_pas){
+  Serial.print("Username: ");
+  Serial.println(wifi_use);
+  Serial.print("Password: ");
+  Serial.println(wifi_pas);
 }
 
 void handleNotFound() {
