@@ -15,7 +15,11 @@ struct WIFI {
 WIFI wifi;
 
 unsigned long previousMillis = 0;
-const long refreshInterval = 10000;
+const long refreshInterval = 1000;
+
+unsigned long c_previousMillis = 0;
+const long c_refreshInterval = 5000;
+
 float t_val[3] = {0};
 
 const char *esp_ssid = "ESP";
@@ -25,6 +29,7 @@ String html_page[4] = {};
 String html_msg_page[3] = {};
 
 boolean setup_flag = true;
+boolean con_flag = true;
 
 DHT dht(DHTPIN, DHTTYPE);
 WiFiServer WIFIserver(80);
@@ -38,31 +43,34 @@ void saveSetting(String ssid, String password);
 
 void setup(void) {
   Serial.begin(9600);
+  while (!Serial.available() > 0) {}
   dht.begin();
   delay(10);
   APconfig();
   while (setup_flag) {
     APserver.handleClient();
   }
-  wifiConfig(wifi.ssid, wifi.password);
+  wifiConfig(wifi.ssid.c_str(), wifi.password.c_str());
 }
 
 void loop(void) {
+
   Serial.println("Connected to wifi");
   delay(2000);
   APserver.stop();
+
   /*String wifi_s = wifi.ssid;
     String wifi_p = wifi.password;
     Serial.print(wifi_s);
     Serial.print(" ");
     Serial.println(wifi_p);*/
-  const char *wifi_s = "0010.0100";
-  const char *wifi_p = "summit14";
-  while (true) {
+  //const char *wifi_s = "0010.0100";
+  //const char *wifi_p = "summit14";
+  /*while (true) {
     WiFiClient client = WIFIserver.available();
     if (WiFi.status() != WL_CONNECTED) {
       Serial1.println("No wifi");
-      WiFi.begin(wifi_s, wifi_p);
+      WiFi.begin(wifi.ssid.c_str(), wifi.password.c_str());
       while (WiFi.status() != WL_CONNECTED) {
         delay(500);
       }
@@ -109,7 +117,39 @@ void loop(void) {
       previousMillis = currentMillis;
       break;
     }
+    }*/
+
+  unsigned long c_currentMillis = millis();
+  if (c_currentMillis - c_previousMillis >= c_refreshInterval) {
+    c_previousMillis = c_currentMillis;
+    check_connection();
   }
+
+}
+
+void check_connection() {
+  while (WiFi.status() != WL_CONNECTED) {
+    if (con_flag) {
+      Serial.print("Reconnecting...");
+      con_flag = false;
+    }
+    reconnect(wifi.ssid, wifi.password);
+  }
+  con_flag = true;
+}
+
+void reconnect(String s, String p) {
+  WiFi.begin(s.c_str(), p.c_str());
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.println("WiFi reconnected");
+  WIFIserver.begin();
+  Serial.println("Server restarted");
+  Serial.print("IP: ");
+  Serial.println(WiFi.localIP());
 }
 
 void get_val(float t_val[]) {
@@ -190,10 +230,10 @@ void create_login_msg(String m_p[]) {
   m_p[1] = "<p><b> Username: </b>" + APserver.arg("username") + "</p>";
   m_p[2] = "<p><b> Password: </b>" + APserver.arg("password") + "</p>";
   saveSetting(APserver.arg("username"), APserver.arg("password"));
-  print_pas_use(APserver.arg("username"),APserver.arg("password"));
+  print_pas_use(APserver.arg("username"), APserver.arg("password"));
 }
 
-void print_pas_use(String wifi_use, String wifi_pas){
+void print_pas_use(String wifi_use, String wifi_pas) {
   Serial.print("Username: ");
   Serial.println(wifi_use);
   Serial.print("Password: ");
