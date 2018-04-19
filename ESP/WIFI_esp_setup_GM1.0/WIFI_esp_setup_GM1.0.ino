@@ -126,6 +126,10 @@ void APconfig() {
   delay(250);
   WiFi.softAP(esp_ssid, esp_password);
   delay(250);
+  IPAddress myIP = WiFi.softAPIP() ;
+  delay(2000);
+  Serial.println("");
+  Serial.print("HotSpt IP:");
   Serial.println(myIP);
   APserver.on("/", HTTP_GET, handleRoot);
   APserver.on("/login", HTTP_POST, handleLogin);
