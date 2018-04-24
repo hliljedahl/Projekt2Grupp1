@@ -15,12 +15,12 @@ struct NODE {
   String id = "";
   String zone = "";
 };
-
 NODE node;
 
 const IPAddress AP_IP(192, 168, 1, 1);
 
-boolean setting_mode;
+boolean config_mode;
+boolean config_flag;
 
 String network_list;
 
@@ -31,19 +31,22 @@ void setup() {
   Serial.begin(115200);
   EEPROM.begin(512);
   delay(10);
-  if (restore_config()) {
+  //reset_config();
+
+  
+  /*if (restore_config()) {
     if (checkConnection()) {
-      setting_mode = false;
+      config_mode = false;
       start_web_server();
       return;
     }
-  }
-  setting_mode = true;
-  setup_mode();
+  }*/
+  config_mode = true;
+  setup_ap();
 }
 
 void loop() {
-  if (setting_mode) {
+  if (config_mode) {
     dns_server.processNextRequest();
   }
   web_server.handleClient();
@@ -51,8 +54,6 @@ void loop() {
 
 boolean restore_config() {
   Serial.println("Reading EEPROM...");
-  wifi.ssid = "";
-  wifi.pass = "";
   if (EEPROM.read(0) != 0) {
     for (int i = 0; i < 32; ++i) {
       wifi.ssid += char(EEPROM.read(i));
@@ -91,74 +92,52 @@ boolean checkConnection() {
 }
 
 void start_web_server() {
-  if (setting_mode) {
-    Serial.print("Starting Web Server at ");
-    Serial.println(WiFi.softAPIP());
-    web_server.on("/settings", []() {
-      String s = "<h1>WiFi Settings</h1><p>Please enter your password by selecting the SSID.</p>";
-      s += "<form method=\"get\" action=\"setap\"><label>SSID: </label><select name=\"ssid\">";
-      s += network_list;
-      s += "</select><br>Password: <input name=\"pass\" length=64 type=\"password\"><input type=\"submit\"></form>";
-      web_server.send(200, "text/html", makePage("", s));
+  if (config_mode) {
+    web_server.on("/settings", []() { 
+      web_server.send(200, "text/html", make_page("", config_page()));
     });
-    web_server.on("/node.info", []() {
-      String s = "<h1>WiFi Settings</h1><p>Please enter your password by selecting the SSID.</p>";   
-      s += "<input type=\"text\" name=\"node.id\" placeholder=\"Node id\"></br>"; 
-      s += "<input type=\"text\" name=\"node.zone\" placeholder=\"Zone name\"></br>"; 
-      web_server.send(200, "text/html", makePage("", s));
-    });
-    web_server.on("/setap", []() {
-      for (int i = 0; i < 96; i++) {
-        EEPROM.write(i, 0);
-      }
-      wifi.ssid = url_decode(web_server.arg("ssid"));
-      Serial.print("SSID: ");
-      Serial.println(wifi.ssid);
-      wifi.pass = url_decode(web_server.arg("pass"));
-      Serial.print("Password: ");
-      Serial.println(wifi.pass);
-      Serial.println("Writing SSID to EEPROM...");
-      for (int i = 0; i < wifi.ssid.length(); i++) {
-        EEPROM.write(i, wifi.ssid[i]);
-      }
-      Serial.println("Writing Password to EEPROM...");
-      for (int i = 0; i < wifi.pass.length(); i++) {
-        EEPROM.write(32 + i, wifi.pass[i]);
-      }
-      EEPROM.commit();
-      Serial.println("Write EEPROM done!");
-      String s = "<h1>Setup complete.</h1><p>device will be connected to \"";
-      s += wifi.ssid;
-      s += "\" after the restart.";
-
-      web_server.send(200, "text/html", makePage("", s));
-      ESP.restart();
+    web_server.on("/config", []() {
+      config_wifi();
     });
     web_server.onNotFound([]() {
-      String s = "<h1>Configuration</h1><p><a href=\"/settings\">WiFi Settings</a></p>";
-      web_server.send(200, "text/html", makePage("", s));
+      //web_server.send(200, "text/html", make_page("", config_page()));
+      web_server.send(200, "text/html", make_page("", config_msg_page()));
     });
   }
   else {
     Serial.print("Starting Web Server at ");
     Serial.println(WiFi.localIP());
     web_server.on("/", []() {
-      String s = "<p><b>Data<b/></p><p><a href=\"/reset\">Reset WiFi Settings</a></p>";
-      web_server.send(200, "text/html", makePage("", s));
+      web_server.send(200, "text/html", make_page("", reset_page()));
     });
     web_server.on("/reset", []() {
-      for (int i = 0; i < 96; i++) {
-        EEPROM.write(i, 0);
-      }
-      EEPROM.commit();
-      String s = "<h1>WiFi settings was reset.</h1><p>Please remove and connect device again.</p>";
-      web_server.send(200, "text/html", makePage("", s));
+      reset_config();
+      web_server.send(200, "text/html", make_page("", reset_msg_page()));
     });
   }
   web_server.begin();
 }
 
-void setup_mode() {
+void config_wifi() {
+  for (int i = 0; i < 96; i++) {
+    EEPROM.write(i, 0);
+  }
+  wifi.ssid = url_decode(web_server.arg("ssid"));
+  wifi.pass = url_decode(web_server.arg("pass"));
+  node.id = url_decode(web_server.arg("node_id"));
+  node.zone = url_decode(web_server.arg("node_zone"));
+  for (int i = 0; i < wifi.ssid.length(); i++) {
+    EEPROM.write(i, wifi.ssid[i]);
+  }
+  for (int i = 0; i < wifi.pass.length(); i++) {
+    EEPROM.write(32 + i, wifi.pass[i]);
+  }
+  EEPROM.commit();
+  print_config(wifi.ssid, wifi.pass, node.id, node.zone);
+  web_server.send(200, "text/html", make_page("", complete_msg_page()));
+}
+
+void setup_ap() {
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
   delay(100);
@@ -178,9 +157,8 @@ void setup_mode() {
   WiFi.softAP(wifi.AP_SSID);
   dns_server.start(53, "*", AP_IP);
   start_web_server();
-  Serial.print("Starting Access Point at \"");
-  Serial.print(wifi.AP_SSID);
-  Serial.println("\"");
+  Serial.print("Access Point: ");
+  Serial.println(wifi.AP_SSID);
 }
 
 String url_decode(String input) {
@@ -218,7 +196,37 @@ String url_decode(String input) {
   return s;
 }
 
-String makePage(String title, String contents) {
+void reset_config() {
+  for (int i = 0; i < 96; i++) {
+    EEPROM.write(i, 0);
+  }
+  EEPROM.commit();
+  Serial.println("Config erased");
+}
+
+void print_config(String ssid, String password, String node_id, String zone) {
+  Serial.println("Writing EEPROM...");
+  Serial.print("SSID: ");
+  Serial.print(ssid);
+  Serial.print(" | ");
+  Serial.print("Password: ");
+  Serial.println(password);
+  Serial.print("Node id: ");
+  Serial.print(node_id);
+  Serial.print(" | ");
+  Serial.print("Zone: ");
+  Serial.println(zone);
+}
+
+void soft_reset() {
+  pinMode(0, OUTPUT);
+  digitalWrite(0, 1);
+  pinMode(2, OUTPUT);
+  digitalWrite(2, 1);
+  ESP.reset();
+}
+
+String make_page(String title, String contents) {
   String s = "<!DOCTYPE html><html><head>";
   s += "<meta name=\"viewport\" content=\"width=device-width,user-scalable=0\">";
   s += "<title>";
@@ -227,4 +235,39 @@ String makePage(String title, String contents) {
   s += contents;
   s += "</body></html>";
   return s;
-}  
+}
+
+String complete_msg_page() {
+  String s = "<h1>Setup complete.</h1><p>Device will be connected to \"";
+  s += wifi.ssid;
+  s += "\" after the restart.";
+  return s;
+}
+
+String config_msg_page() {
+  String s = "<p><b>Configuration</b></p><p><a href=\"/settings\">WiFi Settings</a></p>";
+  return s;
+}
+
+String reset_page() {
+  String s = "<p><b>Data<b/></p><p><a href=\"/reset\">Reset WiFi Settings</a></p>";
+  return s;
+}
+
+String reset_msg_page() {
+  String s = "<h1>WiFi settings was reset.</h1><p>Please remove and connect device again.</p>";
+  return s;
+}
+
+String config_page() {
+  String s = "<h1>Configuration</h1><p>Please enter your password by selecting the SSID.</p>";
+  s += "<form method=config action=config><label>SSID:</label><span style=\"padding-left:27px\"><select name=\"ssid\"></span>";
+  s += network_list;
+  s += "</select><br>Password:<input name=\"pass\"length=64 type=\"password\"><br><p>Enter type and zone name.</p>";
+  s += "Type:<span style=\"padding-left:30px\"><input type=\"text\" name=\"node_id\" value=\"\"<br><br></span>";
+  s += "Zone:<span style=\"padding-left:29px\"><input type=\"text\" name=\"node_zone\"value=\"\"\">";
+  s += "<br><br><span style=\"padding-left:115px\"><input type=\"submit\"value=\"Apply\"></form></span></span>";
+  return s;
+}
+
+
