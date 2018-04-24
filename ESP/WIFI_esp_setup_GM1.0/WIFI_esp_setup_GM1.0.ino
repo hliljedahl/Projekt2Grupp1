@@ -211,3 +211,50 @@ void create_page(String c_p[]) {
   c_p[2] = "<input type=\"password\" name=\"password\" placeholder=\"Password\"></br>";
   c_p[3] = "<input type=\"submit\" value=\"Login\"></form>";
 }
+
+
+    /*
+      Serial.println("new client");
+      while (!client.available()) {
+      delay(1);
+      }
+      // Read the first line of the request
+      String request = client.readStringUntil('\r');
+      Serial.println(request);
+      client.flush();
+      delay(1);
+      client.println("HTTP/1.1 200 OK");
+      client.println("Content-Type: text/html");
+      client.println("");
+      client.println("<!DOCTYPE HTML>");
+      client.println("<html>");
+
+      get_val(t_val);
+      client.print("<b>");
+      client.print("t:");
+      client.print(t_val[1]);
+      client.print(":h:");
+      client.print(t_val[0]);
+      client.print(":i:");
+      client.print(t_val[2]);
+      client.print(":");
+      client.print("</b>");
+      client.println("<br><br>");
+      delay(1);
+      Serial.println("Client disconnected");
+      Serial.println("");
+
+      unsigned long currentMillis = millis();
+      if (currentMillis - previousMillis >= refreshInterval) {
+      previousMillis = currentMillis;
+      break;
+      }*/
+  //}
+
+  /*unsigned long c_currentMillis = millis();
+    if (c_currentMillis - c_previousMillis >= c_refreshInterval) {
+    c_previousMillis = c_currentMillis;
+    check_connection();
+    }*/
+
+//}

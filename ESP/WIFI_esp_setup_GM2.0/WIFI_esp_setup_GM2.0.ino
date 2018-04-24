@@ -14,6 +14,8 @@ struct WIFI {
 
 WIFI wifi;
 
+const char *AP_ssid = "Autoconnect ESP-1";
+
 unsigned long previousMillis = 0;
 const long refreshInterval = 1000;
 
@@ -29,7 +31,7 @@ String html_page[4] = {};
 String html_msg_page[3] = {};
 
 boolean setup_flag = true;
-boolean con_flag = true; 
+boolean con_flag = true;
 boolean setup_ap;
 
 DHT dht(DHTPIN, DHTTYPE);
@@ -58,8 +60,7 @@ void setup(void) {
 void loop(void) {
   Serial.println("Connected to wifi");
   stop_ap(setup_ap);
-  setup_ap = false;
-
+  setup_ap = false; 
   while (true) {
     WiFiClient client = WIFIserver.available();
     if (WiFi.status() != WL_CONNECTED) {
@@ -78,61 +79,8 @@ void loop(void) {
       return;
     }
   }
-}
-
-
-
-
-
-
-
-
-    /*
-      Serial.println("new client");
-      while (!client.available()) {
-      delay(1);
-      }
-      // Read the first line of the request
-      String request = client.readStringUntil('\r');
-      Serial.println(request);
-      client.flush();
-      delay(1);
-      client.println("HTTP/1.1 200 OK");
-      client.println("Content-Type: text/html");
-      client.println("");
-      client.println("<!DOCTYPE HTML>");
-      client.println("<html>");
-
-      get_val(t_val);
-      client.print("<b>");
-      client.print("t:");
-      client.print(t_val[1]);
-      client.print(":h:");
-      client.print(t_val[0]);
-      client.print(":i:");
-      client.print(t_val[2]);
-      client.print(":");
-      client.print("</b>");
-      client.println("<br><br>");
-      delay(1);
-      Serial.println("Client disconnected");
-      Serial.println("");
-
-      unsigned long currentMillis = millis();
-      if (currentMillis - previousMillis >= refreshInterval) {
-      previousMillis = currentMillis;
-      break;
-      }*/
-  //}
-
-  /*unsigned long c_currentMillis = millis();
-    if (c_currentMillis - c_previousMillis >= c_refreshInterval) {
-    c_previousMillis = c_currentMillis;
-    check_connection();
-    }*/
-
-//}
-
+} 
+ 
 void stop_ap(bool s_flag) {
   if (s_flag) {
     APserver.stop();
@@ -178,7 +126,7 @@ void get_val(float t_val[]) {
 void APconfig() {
   WiFi.mode(WIFI_AP);
   delay(250);
-  WiFi.softAP(esp_ssid, esp_password);
+  WiFi.softAP(AP_ssid);
   delay(250);
   IPAddress myIP = WiFi.softAPIP() ;
   delay(2000);
