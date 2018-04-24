@@ -1,6 +1,5 @@
-
-#include <ESP8266WiFi.h>
 #include <DNSServer.h>
+#include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <EEPROM.h>
 #include <ESP8266WebServer.h>
@@ -14,13 +13,17 @@ const char*AP_SSID = "ESP CONFIG-01";
 boolean setting_mode;
 String network_list;
 
+float t_val[3] = {0};
+
 DNSServer dns_server;
+DHT dht(DHTPIN, DHTTYPE);
 ESP8266WebServer web_server(80);
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   EEPROM.begin(512);
   delay(10);
+  reset_config();
   if (restore_config()) {
     if (checkConnection()) {
       setting_mode = false;
@@ -37,7 +40,6 @@ void loop() {
     dns_server.processNextRequest();
   }
   web_server.handleClient();
-  
 }
 
 boolean restore_config() {
@@ -83,73 +85,78 @@ boolean checkConnection() {
 
 void start_web_server() {
   if (setting_mode) {
-    Serial.print("Configuration");
+    Serial.println("Configuration");
+    Serial.print("AP IP: ");
     Serial.println(WiFi.softAPIP());
-    web_server.on("/settings", []() {
-      String s = "<h1>WiFi Settings</h1><p>Please enter your password by selecting the SSID.</p>";
-      s += "<form method=\"get\" action=\"setap\"><label>SSID: </label><select name=\"ssid\">";
-      s += network_list;
-      s += "</select><br>Password: <input name=\"pass\" length=64 type=\"password\"><input type=\"submit\"></form>";
-      web_server.send(200, "text/html", make_page("WiFi Settings", s));
-    });
-    web_server.on("/setap", []() {
-      for (int i = 0; i < 96; ++i) {
-        EEPROM.write(i, 0);
-      }
-      String ssid = urlDecode(web_server.arg("ssid"));
-      Serial.print("SSID: ");
-      Serial.println(ssid);
-      String pass = urlDecode(web_server.arg("pass"));
-      Serial.print("Password: ");
-      Serial.println(pass);
-      Serial.println("Saving SSID...");
-      for (int i = 0; i < ssid.length(); ++i) {
-        EEPROM.write(i, ssid[i]);
-      }
-      Serial.println("Savinf Password...");
-      for (int i = 0; i < pass.length(); ++i) {
-        EEPROM.write(32 + i, pass[i]);
-      }
-      EEPROM.commit();
-      Serial.println("Write EEPROM done!");
-      String s = "<h1>Configuration complete.</h1><p>device will be connected to \"";
-      s += ssid;
-      s += "\" after the restart.";
-      web_server.send(200, "text/html", make_page("WIFI Settings", s));
-      ESP.restart();
-    });
-    web_server.onNotFound([]() {
-      String s = "<h1>Configuration mode</h1><p><a href=\"/settings\">WiFi Settings</a></p>";
-      web_server.send(200, "text/html", make_page("Configuration mode", s));
-    });
+    Serial.print("MAC: ");
+    Serial.println(WiFi.macAddress());
+    configure_wifi();
   }
-  else { 
+  else {
     Serial.print("Starting Web Server at ");
     Serial.println(WiFi.localIP());
-    web_server.on("/data", []() {
-      String s = "<h1>12346789</h1><p><a href=\"/reset\">Reset WiFi Settings</a></p>";
-      web_server.send(200, "text/html", make_page("Reset", s)); 
-    });
-    web_server.on("/reset", []() {
-      for (int i = 0; i < 96; ++i) {
-        EEPROM.write(i, 0);
-      }
-      EEPROM.commit();
-      String s = "<h1>WiFi settings was reset.</h1><p>Please wait for the device to reset.</p>";
-      web_server.send(200, "text/html", make_page("Reset WiFi Settings", s));
-    });
+    Serial.print("MAC: ");
+    Serial.println(WiFi.macAddress());
+    start_server();
   }
   web_server.begin();
+}
+
+void configure_wifi() {
+  web_server.on("/settings", []() {
+    String s = make_settings_page();
+    web_server.send(200, "text/html", make_page("WiFi Settings", s));
+  });
+  web_server.on("/setap", []() {
+    for (int i = 0; i < 96; i++) {
+      EEPROM.write(i, 0);
+    }
+    String ssid = url_decode(web_server.arg("ssid"));
+    Serial.print("SSID: ");
+    Serial.println(web_server.arg("ssid")); 
+    String pass = url_decode(web_server.arg("pass"));
+    Serial.print("Password: ");
+    Serial.println(web_server.arg("pass")); 
+    for (int i = 0; i < ssid.length(); i++) {
+      EEPROM.write(i, ssid[i]);
+    }
+    for (int i = 0; i < pass.length(); i++) {
+      EEPROM.write(32 + i, pass[i]);
+    }
+    EEPROM.commit();
+    String s = make_reset_page(ssid);
+    web_server.send(200, "text/html", make_page("WIFI Settings", s));
+    ESP.restart();
+  });
+  web_server.onNotFound([]() {
+    String s = make_config_page();
+    web_server.send(200, "text/html", make_page("Configuration mode", s));
+  });
+}
+
+void start_server() {
+  web_server.on("/", []() {
+    String s = make_data_page();
+    web_server.send(200, "text/html", make_page("Reset", s));
+  });
+  web_server.on("/reset", []() {
+    for (int i = 0; i < 96; ++i) {
+      EEPROM.write(i, 0);
+    }
+    EEPROM.commit();
+    String s = make_reset_msg_page();
+    web_server.send(200, "text/html", make_page("Reset WiFi Settings", s));
+  });
 }
 
 void setupMode() {
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
   delay(100);
-  int n = WiFi.scanNetworks();
+  int nr = WiFi.scanNetworks();
   delay(100);
   Serial.println("");
-  for (int i = 0; i < n; ++i) {
+  for (int i = 0; i < nr; i++) {
     network_list += "<option value=\"";
     network_list += WiFi.SSID(i);
     network_list += "\">";
@@ -162,23 +169,11 @@ void setupMode() {
   WiFi.softAP(AP_SSID);
   dns_server.start(53, "*", AP_IP);
   start_web_server();
-  Serial.print("Starting Access Point at \"");
-  Serial.print(AP_SSID);
-  Serial.println("\"");
+  Serial.print("Access Point SSID: ");
+  Serial.println (AP_SSID);
 }
 
-String make_page(String title, String contents) {
-  String s = "<!DOCTYPE html><html><head>";
-  s += "<meta name=\"viewport\" content=\"width=device-width,user-scalable=0\">";
-  s += "<title>";
-  s += title;
-  s += "</title></head><body>";
-  s += contents;
-  s += "</body></html>";
-  return s;
-}
-
-String urlDecode(String input) {
+String url_decode(String input) {
   String s = input;
   s.replace("%20", " ");
   s.replace("+", " ");
@@ -210,5 +205,65 @@ String urlDecode(String input) {
   s.replace("%5E", "^");
   s.replace("%5F", "-");
   s.replace("%60", "`");
+  return s;
+}
+
+void reset_config() {
+  for (int i = 0; i < 96; i++) {
+    EEPROM.write(i, 0);
+  }
+  EEPROM.commit();
+}
+
+
+void get_val(float t_val[]) {
+  if (isnan(t_val[0]) || isnan(t_val[1])) {
+    return;
+  }
+  t_val[0] = dht.readHumidity();
+  t_val[1] = dht.readTemperature();
+  t_val[2] = dht.computeHeatIndex(t_val[1], t_val[0], false);
+}
+
+String make_data_page() {
+  get_val(t_val);
+  String s = "<h1><b>" + String(t_val[1]) + "</b></h1><p><a href=\"/reset\">Reset WiFi Settings</a></p>";
+  return s;
+}
+
+String make_config_page() {
+  String s = "<h1>Configuration mode</h1><p><a href=\"/settings\">WiFi Settings</a></p>";
+  return s;
+}
+
+
+String make_reset_page(String wifi_ssid) {
+  String s = "<h1>Configuration complete.</h1><p>device will be connected to \"";
+  s += wifi_ssid;
+  s += "\" after the restart.";
+  return s;
+}
+
+String make_settings_page() {
+  String s = "<h1>WiFi Settings</h1><p>Please enter your password by selecting the SSID.</p>";
+  s += "<form method=\"get\" action=\"setap\"><label>SSID: </label><select name=\"ssid\">";
+  s += network_list;
+  s += "</select><br>Password: <input name=\"pass\" length=64 type=\"password\"><input type=\"submit\"></form>";
+  return s;
+}
+
+String make_reset_msg_page() {
+  String s = "<p><b>WiFi settings was reset.</b></p><p>Please wait for the device to reset.</p>";
+  return s;
+}
+
+String make_page(String title, String contents) {
+  String s = "<!DOCTYPE html><html><head>";
+  s += "<meta name=\"viewport\" content=\"width=device-width,user-scalable=0\">";
+  s += "<title>";
+  s += title;
+  s += "</title></head><body>";
+  s += contents;
+  s += "</body></html>";
   return s;
 }
