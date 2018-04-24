@@ -14,8 +14,6 @@ struct WIFI {
 
 WIFI wifi;
 
-const char *AP_ssid = "Autoconnect ESP-1";
-
 unsigned long previousMillis = 0;
 const long refreshInterval = 1000;
 
@@ -79,7 +77,11 @@ void loop(void) {
       return;
     }
   }
-} 
+}
+
+
+
+
  
 void stop_ap(bool s_flag) {
   if (s_flag) {
@@ -126,7 +128,7 @@ void get_val(float t_val[]) {
 void APconfig() {
   WiFi.mode(WIFI_AP);
   delay(250);
-  WiFi.softAP(AP_ssid);
+  WiFi.softAP(esp_ssid, esp_password);
   delay(250);
   IPAddress myIP = WiFi.softAPIP() ;
   delay(2000);

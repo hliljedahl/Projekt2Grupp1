@@ -9,8 +9,8 @@
 #define DHTTYPE DHT22
 #define DHTPIN 0
 
-const IPAddress apIP(192, 168, 1, 1);
-const char* apSSID = "ESP8266_SETUP";
+const IPAddress AP_IP(192, 168, 1, 1);
+const char*AP_SSID = "ESP CONFIG-01";
 boolean setting_mode;
 String network_list;
 
@@ -119,7 +119,7 @@ void start_web_server() {
       ESP.restart();
     });
     web_server.onNotFound([]() {
-      String s = "<h1>AP mode</h1><p><a href=\"/settings\">Wi-Fi Settings</a></p>";
+      String s = "<h1>Configuration mode</h1><p><a href=\"/settings\">WiFi Settings</a></p>";
       web_server.send(200, "text/html", make_page("Configuration mode", s));
     });
   }
@@ -127,18 +127,16 @@ void start_web_server() {
     Serial.print("Starting Web Server at ");
     Serial.println(WiFi.localIP());
     web_server.on("/", []() {
-      String s = "<h1>STA mode</h1><p><a href=\"/reset\">Reset Wi-Fi Settings</a></p>";
-      web_server.send(200, "text/html", make_page("STA mode", s));
-      String s2 = "<<p>123456789</p>";
-      web_server.send(200, "text/plane", make_page("Data", s2));
+      String s = "<h1>12346789</h1><p><a href=\"/reset\">Reset WiFi Settings</a></p>";
+      web_server.send(200, "text/html", make_page("Reset", s)); 
     });
     web_server.on("/reset", []() {
       for (int i = 0; i < 96; ++i) {
         EEPROM.write(i, 0);
       }
       EEPROM.commit();
-      String s = "<h1>Wi-Fi settings was reset.</h1><p>Please reset device.</p>";
-      web_server.send(200, "text/html", make_page("Reset Wi-Fi Settings", s));
+      String s = "<h1>WiFi settings was reset.</h1><p>Please wait for the device to reset.</p>";
+      web_server.send(200, "text/html", make_page("Reset WiFi Settings", s));
     });
   }
   web_server.begin();
@@ -160,12 +158,12 @@ void setupMode() {
   }
   delay(100);
   WiFi.mode(WIFI_AP);
-  WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-  WiFi.softAP(apSSID);
-  dns_server.start(53, "*", apIP);
+  WiFi.softAPConfig(AP_IP, AP_IP, IPAddress(255, 255, 255, 0));
+  WiFi.softAP(AP_SSID);
+  dns_server.start(53, "*", AP_IP);
   start_web_server();
   Serial.print("Starting Access Point at \"");
-  Serial.print(apSSID);
+  Serial.print(AP_SSID);
   Serial.println("\"");
 }
 
