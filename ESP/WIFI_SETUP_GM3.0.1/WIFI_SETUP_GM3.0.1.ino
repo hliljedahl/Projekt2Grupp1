@@ -137,15 +137,14 @@ bool check_wifi_connection() {
     if (WiFi.status() == WL_CONNECTED) {
       Serial.println("..Connection ok!");
       return true;
-    }
-    if ((c % 10) == 1) {
-      Serial.println("Trying to reconnect");
-
+    } else {
+      WiFi.begin(wifi.ssid.c_str(), wifi.pass.c_str());
     }
     delay(250);
     Serial.print(".");
     c++;
   }
+  Serial.println("Timed out.");
 }
 
 boolean connect_wifi() {
@@ -249,7 +248,7 @@ void setup_ap() {
   WiFi.disconnect();
   delay(100);
   int nr = WiFi.scanNetworks();
-  delay(100);
+  delay(10);
   Serial.println("");
   for (int i = 0; i < nr; i++) {
     network_list += "<option value=\"";
@@ -258,7 +257,7 @@ void setup_ap() {
     network_list += WiFi.SSID(i);
     network_list += "</option>";
   }
-  delay(100);
+  delay(5);
   WiFi.mode(WIFI_AP);
   WiFi.softAPConfig(AP_IP, AP_IP, IPAddress(255, 255, 255, 0));
   WiFi.softAP(wifi.AP_SSID);
@@ -418,5 +417,3 @@ String config_page() {
   s += "<span style=\"padding-left:152px\"><input type=\"submit\"value=\"Apply\"></form></span></span>";
   return s;
 }
-
-
