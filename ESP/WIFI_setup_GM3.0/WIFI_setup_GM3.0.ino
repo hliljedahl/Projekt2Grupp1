@@ -19,7 +19,7 @@ WIFI wifi;
 struct NODE {
   String temp_name = "";  //temp
   String id_1 = "Temperature";
-  String hum_name = "";  //hum
+  String humi_name = "";  //hum
   String id_2 = "Humidity";
   String zone = "";
   String ip = "";
@@ -31,7 +31,7 @@ const IPAddress AP_IP(192, 168, 1, 1);
 unsigned long t_previousMillis = 0;
 unsigned long c_previousMillis = 0;
 const long t_refreshInterval = 15000;
-const long c_refreshInterval = 30000; 
+const long c_refreshInterval = 30000;
 
 float t_val[3] = {0};
 
@@ -41,6 +41,8 @@ boolean info_flag;
 String network_list;
 String msg;
 
+String l = "OK";
+
 DHT dht(DHTPIN, DHTTYPE);
 DNSServer dns_server;
 ESP8266WebServer web_server(80);
@@ -49,6 +51,10 @@ void setup() {
   Serial.begin(115200);
   EEPROM.begin(512);
   delay(10);
+  //reset_config();
+  if (EEPROM.read(511) == 0) {
+    reset_config();
+  }
   if (restore_config()) {
     if (connect_wifi()) {
       config_mode = false;
@@ -69,15 +75,16 @@ void loop() {
     if (info_flag) {
       send_info_msg();
       start_web_server();
+      EEPROM.write(511, 1);
+      EEPROM.commit();
       info_flag = false;
+      //web_server.begin();
     }
     unsigned long t_currentMillis = millis();
     if (t_currentMillis - t_previousMillis >= t_refreshInterval) {
       t_previousMillis = t_currentMillis;
-      Serial.println("_____________________________________"); 
       get_val(t_val);
-      start_web_server();
-      Serial.println("_____________________________________"); 
+      Serial.println(EEPROM.read(511));
     }
   }
 }
@@ -105,7 +112,7 @@ void send_info_msg() {
       msg = "http://www.lonelycircuits.se/data/add_sensor.php?zone=";
       msg += node.zone;
       msg += "&name=\"";
-      msg += node.hum_name;
+      msg += node.humi_name;
       msg += "\"&type=\"";
       msg += node.id_2;
       msg += "\"&ip=";
@@ -181,7 +188,6 @@ void start_web_server() {
     });
     web_server.onNotFound([]() {
       web_server.send(200, "text/html", make_page("", config_msg_page()));
-      Serial.println("-1");
     });
   }
   else {
@@ -208,7 +214,7 @@ void config_wifi() {
   }
   wifi.ssid = url_decode(web_server.arg("ssid"));
   wifi.pass = url_decode(web_server.arg("pass"));
-  node.hum_name = url_decode(web_server.arg("hum_name"));
+  node.humi_name = url_decode(web_server.arg("humi_name"));
   node.temp_name = url_decode(web_server.arg("temp_name"));
   node.zone = url_decode(web_server.arg("node_zone"));
   for (int i = 0; i < string_length(wifi.ssid); i++) {
@@ -218,7 +224,7 @@ void config_wifi() {
     EEPROM.write(32 + i, wifi.pass[i]);
   }
   EEPROM.commit();
-  print_config(wifi.ssid, wifi.pass, node.temp_name, node.hum_name, node.zone);
+  print_config(wifi.ssid, wifi.pass, node.temp_name, node.humi_name, node.zone);
   web_server.send(200, "text/html", make_page("", complete_msg_page()));
   restore_config();
 }
@@ -227,8 +233,8 @@ boolean restore_config() {
   Serial.println("Reading EEPROM...");
   wifi.ssid = "";
   wifi.pass = "";
+
   if (EEPROM.read(0) != 0) {
-    //info_flag = false;
     for (int i = 0; i < 32; i++) {
       wifi.ssid += char(EEPROM.read(i));
     }
@@ -323,7 +329,7 @@ String url_decode(String input) {
 }
 
 void reset_config() {
-  for (int i = 0; i < 96; i++) {
+  for (int i = 0; i < 512; i++) {
     EEPROM.write(i, 0);
   }
   EEPROM.commit();
@@ -411,16 +417,66 @@ String reset_msg_page() {
 }
 
 String config_page() {
-  String s = "<h1>Configuration</h1><p>Please enter your password by selecting the SSID.</p>";
-  s += "<form method=\"get\" action=config><label><Strong>SSID:</Strong></label><span style=\"padding-left:59px\">";
-  s += "<select name=\"ssid\"></span>";
+  String s = "<head><style>";
+  s += "body {";
+  s += "background-color: lightblue;";
+  s += "}";
+  s += "h1 {";
+  s += "color: white;";
+  s += "text-align: center;";
+  s += "}";
+  s += "label{";
+  s += "color: white;";
+  s += "}";
+  s += "p {";
+  s += "color: white;";
+  s += "font-family: Raleway;";
+  s += "font-size: 20px;";
+  s += "}";
+  s += "</head></style>";
+  s += "<h1>Configuration</h1>";
+  s += "<p>Please enter your password by selecting the SSID.</p>";
+  s += "<form method=\"get\" action=config><label><Strong>SSID:</Strong></label>";
+  s += "<span style=\"padding-left:59px\"><select name=\"ssid\"></span>";
   s += network_list;
-  s += "</select><br><Strong>Password:</Strong><span style=\"padding-left:29px\">";
-  s += "<input name=\"pass\" length=64 type=\"password\"></span><br><p>Enter name for sensors and zone.</p>";
-  s += "<Strong>Humidity:</Strong><span style=\"padding-left:29px\"><input type=\"text\" name=\"hum_name\"";
-  s += "onfocus=\"this.value=''\" value=\"Hum\"><br><Strong>Temperature:</Strong><span style=\"padding-left:6px\">";
-  s += "<input type=\"text\" name=\"temp_name\" onfocus=\"this.value=''\"value=Temp><br></span><Strong>Zone:</Strong>";
-  s += "<span style=\"padding-left:60px\"><input type=\"text\" name=\"node_zone\" onfocus=\"this.value=''\" value=\"zone\"><br>";
-  s += "<span style=\"padding-left:152px\"><input type=\"submit\"value=\"Apply\"></form></span></span>";
+  s += "</select>";
+  s += "<br>";
+  s += "<Strong><label>Password:</label></Strong>";
+  s += "<span style=\"padding-left:29px\">";
+  s += "<input length=64 type=\"password\" name=\"pass\" id=\"pass\">";
+  s += "<br>";
+  s += "<font color=\"white\" size=\"2\">Show Password</font>";
+  s += "<span style=\"padding-left:17px\">";
+  s += "<input type=\"checkbox\" onclick=\"hideFunction()\">";
+  s += "</span>";
+  s += "<script>";
+  s += "function hideFunction() {";
+  s += "var x = document.getElementById(\"pass\");";
+  s += "if (x.type === \"password\") {";
+  s += "x.type = \"text\";";
+  s += "} else {";
+  s += "x.type = \"password\";";
+  s += " }";
+  s += " }";
+  s += "</script>";
+  s += "<br>";
+  s += "<p>Enter name for sensors and zone.</p>";
+  s += "<Strong><label>Humidity:</label></Strong>";
+  s += "<span style=\"padding-left:29px\">";
+  s += "<input type=\"text\" name=\"humi_name\"onfocus=\"this.value=''\" value=\"Hum\">";
+  s += "<br>";
+  s += "<Strong><label>Temperature:</label></Strong>";
+  s += "<span style=\"padding-left:6px\">";
+  s += "<input type=\"text\" name=\"temp_name\" onfocus=\"this.value=''\"value=Temp>";
+  s += "<br>";
+  s += "</span>";
+  s += "<Strong><label>Zone:</label></Strong>";
+  s += "<span style=\"padding-left:60px\">";
+  s += "<input type=\"text\" name=\"node_zone\" onfocus=\"this.value=''\" value=\"Zone1\">";
+  s += "<br>";
+  s += "<span style=\"padding-left:152px\">";
+  s += "<input type=\"submit\"value=\"Apply\">";
+  s += "</form></span></span>";
   return s;
 }
+

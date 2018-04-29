@@ -11,8 +11,13 @@ h1 {
 }
 
 p {
-    font-family: verdana;
+    font-family: Raleway;
     font-size: 20px;
+    color: white;
+}
+
+label{
+	color: white;
 }
 </style>
 </head>
@@ -26,11 +31,11 @@ p {
 <select name="ssid"></span>
 network_list
 </select>
-<br><Strong>Password:</Strong>
+<br><Strong><label>Password:</label></Strong>
 <span style="padding-left:29px">
 
 <input type="password" id="pass"><br>
-<font size="2">Show Password</font>
+<font color="white" size="2">Show Password</font>
 <span style="padding-left:17px">
 <input type="checkbox" onclick="hideFunction()">
 </span>
@@ -51,17 +56,17 @@ function hideFunction() {
 <p>
 Enter name for sensors and zone.
 </p>
-<Strong>Humidity:</Strong>
+<Strong><label>Humidity:</label></Strong>
 <span style="padding-left:29px">
-<input type="text" name="humi_name" onfocus="this.value=''" value="Humi">
+<input type="text" name="humi_name" onfocus="this.value= ''" value="Humi">
 <br>
-<Strong>Temperature:</Strong>
+<Strong><label>Temperature:</label></Strong>
 <span style="padding-left:6px">
-<input type="text" name="temp_name" onfocus="this.value=''"value=Temp>
+<input type="text" name="temp_name" onfocus="this.value= ''"value=Temp>
 <br>
-</span><Strong>Zone:</Strong>
+</span><Strong><label>Zone:</label></Strong>
 <span style="padding-left:60px">
-<input type="text" name="node_zone" onfocus="this.value=''" value="zone">
+<input type="text" name="node_zone" onfocus="this.value= ''" value="zone">
 <br>
 <span style="padding-left:152px"><input type="submit"value="Apply"></form></span>
 </span>
