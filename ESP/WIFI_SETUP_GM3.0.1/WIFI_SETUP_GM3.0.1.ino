@@ -8,7 +8,6 @@
 
 #define DHTTYPE DHT22
 #define DHTPIN 0
-#define CHECK 60000
 
 struct WIFI {
   const char *AP_SSID = "ESP CONFIG";
@@ -19,9 +18,9 @@ WIFI wifi;
 
 struct NODE {
   String temp_name = "";  //temp
-  String id_1 = "Temp";
+  String id_1 = "Temperature";
   String hum_name = "";  //hum
-  String id_2 = "Hum";
+  String id_2 = "Humidity";
   String zone = "";
   String ip = "";
 };
@@ -31,8 +30,8 @@ const IPAddress AP_IP(192, 168, 1, 1);
 
 unsigned long t_previousMillis = 0;
 unsigned long c_previousMillis = 0;
-const long t_refreshInterval = 8000;
-const long c_refreshInterval = 15000;
+const long t_refreshInterval = 15000;
+const long c_refreshInterval = 30000;
 
 float t_val[3] = {0};
 
@@ -59,13 +58,11 @@ void setup() {
     config_mode = true;
     setup_ap();
   }
-  //info_flag = true;
 }
 
 void loop() {
   if (config_mode) {
     dns_server.processNextRequest();
-    //config_mode = false;
   }
   web_server.handleClient();
   if (!config_mode) {
@@ -77,14 +74,18 @@ void loop() {
     unsigned long t_currentMillis = millis();
     if (t_currentMillis - t_previousMillis >= t_refreshInterval) {
       t_previousMillis = t_currentMillis;
+      Serial.println("_____________________________________");
       get_val(t_val);
-    }
-    unsigned long c_currentMillis = millis();
-    if (c_currentMillis - c_previousMillis >= c_refreshInterval) {
-      c_previousMillis = c_currentMillis;
-      check_wifi_connection();
+      start_web_server();
+      Serial.println("_____________________________________");
     }
   }
+}
+
+void send_reset_msg() {
+  Serial.println("Sending reset message to database");
+
+  delay(2000);
 
 }
 
@@ -132,15 +133,20 @@ void send_info_msg() {
 
 bool check_wifi_connection() {
   int c = 0;
+  for (int i = 0; i < 32; i++) {
+    wifi.ssid += char(EEPROM.read(i));
+  }
+  for (int i = 32; i < 96; i++) {
+    wifi.pass += char(EEPROM.read(i));
+  }
   Serial.print("Checking connection");
   while ( c < 40 ) {
     if (WiFi.status() == WL_CONNECTED) {
       Serial.println("..Connection ok!");
       return true;
-    } else {
-      WiFi.begin(wifi.ssid.c_str(), wifi.pass.c_str());
     }
-    delay(250);
+    WiFi.begin(wifi.ssid.c_str(), wifi.pass.c_str());
+    delay(500);
     Serial.print(".");
     c++;
   }
@@ -152,7 +158,6 @@ boolean connect_wifi() {
   Serial.print("Waiting for WiFi connection");
   while ( count < 50 ) {
     if (WiFi.status() == WL_CONNECTED) {
-      Serial.println();
       Serial.println("Connected!");
       return true;
     }
@@ -176,6 +181,7 @@ void start_web_server() {
     });
     web_server.onNotFound([]() {
       web_server.send(200, "text/html", make_page("", config_msg_page()));
+      Serial.println("-1");
     });
   }
   else {
@@ -188,6 +194,7 @@ void start_web_server() {
     web_server.on("/reset", []() {
       info_flag = true;
       web_server.send(200, "text/html", make_page("", reset_msg_page()));
+      send_reset_msg();
       reset_config();
       init_setup();
     });
@@ -344,10 +351,10 @@ void print_config(String ssid, String password, String node1_name,  String node2
   Serial.println("____________________");
 }
 void get_val(float t_val[]) {
+  Serial.println("Refresh Temp");
   if (isnan(t_val[0]) || isnan(t_val[1])) {
     return;
   }
-  Serial.println("Renew val!");
   t_val[0] = dht.readHumidity();
   t_val[1] = dht.readTemperature();
   t_val[2] = dht.computeHeatIndex(t_val[1], t_val[0], false);
