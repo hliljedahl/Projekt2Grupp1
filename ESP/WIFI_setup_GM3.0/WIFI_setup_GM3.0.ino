@@ -40,7 +40,7 @@ boolean info_flag;
 
 String network_list;
 String msg;
- 
+
 DHT dht(DHTPIN, DHTTYPE);
 DNSServer dns_server;
 ESP8266WebServer web_server(80);
@@ -74,64 +74,20 @@ void loop() {
       EEPROM.write(511, 1);
       EEPROM.commit();
       delay(200);
+      save_node_info();
+      send_erase_msg();
       send_info_msg();
       start_web_server();
-      info_flag = false; 
+      info_flag = false;
     }
-    unsigned long t_currentMillis = millis();
-    if (t_currentMillis - t_previousMillis >= t_refreshInterval) {
+    /*unsigned long t_currentMillis = millis();
+      if (t_currentMillis - t_previousMillis >= t_refreshInterval) {
       t_previousMillis = t_currentMillis;
-      Serial.println(EEPROM.read(511));
-    }
+      }*/
   }
 }
 
-void send_reset_msg() {
-  Serial.println("Sending reset message to database");
-
-  delay(2000);
-
-}
-
-void send_info_msg() {
-  for (int i = 0; i < 2; i++) {
-    if (i == 0) {
-      msg = "http://www.lonelycircuits.se/data/add_sensor.php?zone=";
-      msg += node.zone;
-      msg += "&name=\"";
-      msg += node.temp_name;
-      msg += "\"&type=\"";
-      msg += node.id_1;
-      msg += "\"&ip=";
-      msg += node.ip;
-    }
-    else if (i == 1) {
-      msg = "http://www.lonelycircuits.se/data/add_sensor.php?zone=";
-      msg += node.zone;
-      msg += "&name=\"";
-      msg += node.humi_name;
-      msg += "\"&type=\"";
-      msg += node.id_2;
-      msg += "\"&ip=";
-      msg += node.ip;
-    }
-    HTTPClient http;  //Declare object of class HTTPClient
-    http.begin(msg);  //Specify request destination
-    http.addHeader("Content-Type", "text/plain");  //Specify content-type header
-    int httpCode = http.POST(msg);  //Send the request
-    String payload = http.getString();  //Get the response payload
-    Serial.println("____________________________________________________________________________________________________");
-    Serial.print("HTTP return code: ");
-    Serial.println(httpCode);
-    Serial.println("");
-    Serial.print("Request response payload: ");
-    Serial.println(payload);
-    Serial.println("____________________________________________________________________________________________________");
-    Serial.println("(Close connection)");
-    http.end();
-    delay(15);
-  }
-}
+//######################## WiFi connection ########################
 
 bool check_wifi_connection() {
   int c = 0;
@@ -173,6 +129,8 @@ boolean connect_wifi() {
   return false;
 }
 
+//######################## Config AP, WiFi & webbserver ########################
+
 void start_web_server() {
   if (config_mode) {
     web_server.on("/settings", []() {
@@ -204,54 +162,6 @@ void start_web_server() {
   web_server.begin();
 }
 
-void config_wifi() {
-  for (int i = 0; i < 96; i++) {
-    EEPROM.write(i, 0);
-  }
-  wifi.ssid = url_decode(web_server.arg("ssid"));
-  wifi.pass = url_decode(web_server.arg("pass"));
-  node.humi_name = url_decode(web_server.arg("humi_name"));
-  node.temp_name = url_decode(web_server.arg("temp_name"));
-  node.zone = url_decode(web_server.arg("node_zone"));
-  for (int i = 0; i < string_length(wifi.ssid); i++) {
-    EEPROM.write(i, wifi.ssid[i]);
-  }
-  for (int i = 0; i < string_length(wifi.pass); i++) {
-    EEPROM.write(32 + i, wifi.pass[i]);
-  }
-  EEPROM.commit();
-  print_config(wifi.ssid, wifi.pass, node.temp_name, node.humi_name, node.zone);
-  web_server.send(200, "text/html", make_page("", complete_msg_page()));
-  restore_config();
-}
-
-boolean restore_config() {
-  Serial.println("Reading EEPROM...");
-  wifi.ssid = "";
-  wifi.pass = "";
-
-  if (EEPROM.read(0) != 0) {
-    for (int i = 0; i < 32; i++) {
-      wifi.ssid += char(EEPROM.read(i));
-    }
-    Serial.print("SSID: ");
-    Serial.println(wifi.ssid);
-    for (int i = 32; i < 96; i++) {
-      wifi.pass += char(EEPROM.read(i));
-    }
-    Serial.print("Password: ");
-    Serial.println(wifi.pass);
-    WiFi.begin(wifi.ssid.c_str(), wifi.pass.c_str());
-    delay(500);
-    return true;
-  }
-  else {
-    info_flag = true;
-    Serial.println("Config not found.");
-    return false;
-  }
-}
-
 void setup_ap() {
   WiFi.mode(WIFI_STA);
   WiFi.disconnect();
@@ -276,11 +186,169 @@ void setup_ap() {
   Serial.println(wifi.AP_SSID);
 }
 
+void config_wifi() {
+  for (int i = 0; i < 96; i++) {
+    EEPROM.write(i, 0);
+  }
+  wifi.ssid = url_decode(web_server.arg("ssid"));
+  wifi.pass = url_decode(web_server.arg("pass"));
+  node.humi_name = url_decode(web_server.arg("humi_name"));
+  node.temp_name = url_decode(web_server.arg("temp_name"));
+  node.zone = url_decode(web_server.arg("node_zone"));
+  for (int i = 0; i < string_length(wifi.ssid); i++) {
+    EEPROM.write(i, wifi.ssid[i]);
+  }
+  for (int i = 0; i < string_length(wifi.pass); i++) {
+    EEPROM.write(32 + i, wifi.pass[i]);
+  }
+  EEPROM.commit();
+  print_config(wifi.ssid, wifi.pass, node.temp_name, node.humi_name, node.zone);
+  web_server.send(200, "text/html", make_page("", complete_msg_page()));
+  restore_config();
+}
+
+//######################## Save, erase & restore ########################
+
+void save_node_info() {
+  Serial.println();
+  Serial.println("Save node info");
+  Serial.println("___________________________________________");
+  Serial.print("Humidity sensor: ");
+  Serial.println(node.humi_name);
+  Serial.print("Temperature sensor: ");
+  Serial.println(node.temp_name);
+  Serial.println("___________________________________________");
+  for (int i = 0; i < string_length(node.humi_name); i++) {
+    EEPROM.write(150 + i, node.humi_name[i]);
+  }
+  for (int i = 0; i < string_length(node.temp_name); i++) {
+    EEPROM.write(200 + i, node.temp_name[i]);
+  }
+  EEPROM.commit();
+}
+
+void send_reset_msg() {
+  node.humi_name = "";
+  node.temp_name = "";
+  for (int i = 150; i < 200; i++) {
+    node.humi_name += char(EEPROM.read(i));
+  }
+  for (int i = 200; i < 250; i++) {
+    node.temp_name += char(EEPROM.read(i));
+  }
+  Serial.println("___________________________________________");
+  Serial.println("Sending reset message to database");
+  Serial.print("Remove humidity sensor: ");
+  Serial.println(node.humi_name);
+  Serial.print("Remove temperature sensor: ");
+  Serial.println(node.temp_name);
+  Serial.println("___________________________________________");
+  delay(500);
+}
+
+boolean restore_config() {
+  Serial.println("");
+  Serial.println("Reading EEPROM...");
+  wifi.ssid = "";
+  wifi.pass = "";
+  if (EEPROM.read(0) != 0) {
+    for (int i = 0; i < 32; i++) {
+      wifi.ssid += char(EEPROM.read(i));
+    }
+    Serial.print("SSID: ");
+    Serial.println(wifi.ssid);
+    for (int i = 32; i < 96; i++) {
+      wifi.pass += char(EEPROM.read(i));
+    }
+    Serial.print("Password: ");
+    Serial.println(wifi.pass);
+    WiFi.begin(wifi.ssid.c_str(), wifi.pass.c_str());
+    delay(500);
+    return true;
+  }
+  else {
+    info_flag = true;
+    Serial.println("No configurations found.");
+    return false;
+  }
+}
+
+void reset_config() {
+  for (int i = 0; i < 512; i++) {
+    EEPROM.write(i, 0);
+  }
+  EEPROM.commit();
+  Serial.println("Config erased");
+}
+
+void send_erase_msg() {
+  Serial.println("");
+  Serial.print("Remove: ");
+  Serial.println(node.ip);
+  msg = "http://www.lonelycircuits.se/data/remove_sensor_ip.php?ip=";
+  msg += node.ip;
+  HTTPClient http;  //Declare object of class HTTPClient
+  http.begin(msg);  //Specify request destination
+  http.addHeader("Content-Type", "text/plain");  //Specify content-type header
+  int httpCode = http.POST(msg);  //Send the request
+  String payload = http.getString();  //Get the response payload
+  Serial.println("____________________________________________________");
+  Serial.print("HTTP return code: ");
+  Serial.println(httpCode);
+  Serial.println("");
+  Serial.print("Request response payload: ");
+  Serial.println(payload);
+  Serial.println("____________________________________________________");
+  Serial.println("(Close connection)");
+  http.end();
+  delay(500);
+}
+
+void send_info_msg() {
+  for (int i = 0; i < 2; i++) {
+    if (i == 0) {
+      msg = "http://www.lonelycircuits.se/data/add_sensor.php?zone=";
+      msg += node.zone;
+      msg += "&name=\"";
+      msg += node.temp_name;
+      msg += "\"&type=\"";
+      msg += node.id_1;
+      msg += "\"&ip=";
+      msg += node.ip;
+    }
+    else if (i == 1) {
+      msg = "http://www.lonelycircuits.se/data/add_sensor.php?zone=";
+      msg += node.zone;
+      msg += "&name=\"";
+      msg += node.humi_name;
+      msg += "\"&type=\"";
+      msg += node.id_2;
+      msg += "\"&ip=";
+      msg += node.ip;
+    }
+    HTTPClient http;  //Declare object of class HTTPClient
+    http.begin(msg);  //Specify request destination
+    http.addHeader("Content-Type", "text/plain");  //Specify content-type header
+    int httpCode = http.POST(msg);  //Send the request
+    String payload = http.getString();  //Get the response payload
+    Serial.println("____________________________________________________");
+    Serial.print("HTTP return code: ");
+    Serial.println(httpCode);
+    Serial.println("");
+    Serial.print("Request response payload: ");
+    Serial.println(payload);
+    Serial.println("____________________________________________________");
+    Serial.println("(Close connection)");
+    http.end();
+    delay(15);
+  }
+}
+
 void init_setup() {
   if (restore_config()) {
     if (connect_wifi()) {
       config_mode = false;
-      start_web_server(); 
+      start_web_server();
     }
   } else {
     config_mode = true;
@@ -321,14 +389,6 @@ String url_decode(String input) {
   s.replace("%5F", "-");
   s.replace("%60", "`");
   return s;
-}
-
-void reset_config() {
-  for (int i = 0; i < 512; i++) {
-    EEPROM.write(i, 0);
-  }
-  EEPROM.commit();
-  Serial.println("Config erased");
 }
 
 void print_config(String ssid, String password, String node1_name,  String node2_name, String zone) {
