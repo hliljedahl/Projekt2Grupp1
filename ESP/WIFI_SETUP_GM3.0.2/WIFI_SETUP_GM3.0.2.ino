@@ -475,4 +475,3 @@ String config_page() {
   s += "</form></span></span>";
   return s;
 }
-
