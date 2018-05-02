@@ -2,6 +2,8 @@
 
 boolean result = false;
 
+WiFiServer server(80);
+
 void setup() {
  Serial.begin(9600);
  Serial.println();
@@ -19,3 +21,5 @@ void loop() {
   Serial.printf("Station connected = %d\n", WiFi.softAPgetStationNum());
   delay(3000);
 }
+
+

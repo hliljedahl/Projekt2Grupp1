@@ -45,7 +45,7 @@ void handleLogin() {
     server.send(400, "text/plain", "400: Invalid Request");
     return;
   }
-  if (server.arg("username") == "kuken" && server.arg("password") == "kukeniroven") {
+  if (server.arg("username") == "esp123" && server.arg("password") == "123esp") {
     server.send(200, "text/html", "<h1>Welcome, " + server.arg("username") + "!</h1><p>Login successful</p>");
   }
   else {
