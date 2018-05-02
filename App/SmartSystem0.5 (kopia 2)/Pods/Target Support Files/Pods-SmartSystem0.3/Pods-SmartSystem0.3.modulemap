@@ -1,0 +1,6 @@
+framework module Pods_SmartSystem0_3 {
+  umbrella header "Pods-SmartSystem0.3-umbrella.h"
+
+  export *
+  module * { export * }
+}

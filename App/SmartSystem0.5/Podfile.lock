@@ -1,0 +1,26 @@
+PODS:
+  - Charts (3.1.1):
+    - Charts/Core (= 3.1.1)
+  - Charts/Core (3.1.1)
+  - DropDown (2.3.1)
+  - UIDropDown (1.1.1)
+
+DEPENDENCIES:
+  - Charts
+  - DropDown
+  - UIDropDown
+
+SPEC REPOS:
+  https://github.com/CocoaPods/Specs.git:
+    - Charts
+    - DropDown
+    - UIDropDown
+
+SPEC CHECKSUMS:
+  Charts: 90a4d61da0f6e06684c591e3bcab11940fe61736
+  DropDown: 20499c7b2731b0d21609af924e47c7677a2be50d
+  UIDropDown: 22e6e3e22d419884c8f21d95ea9be36aac905ed4
+
+PODFILE CHECKSUM: 34e04661a6d00383a9db8dec8e02e120dcfbf083
+
+COCOAPODS: 1.5.0

@@ -17,6 +17,7 @@ dataArray = data.split(":")
 temp = dataArray[1]
 hum = dataArray[3]
 heat = dataArray[5]
+temp2 = dataArray[7]
 
 print "Temperature : " + temp +"C"
 print "Humidity : " + hum +"%"
