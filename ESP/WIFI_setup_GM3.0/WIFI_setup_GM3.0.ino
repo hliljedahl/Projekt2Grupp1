@@ -7,7 +7,9 @@
 #include "DHT.h"
 
 #define DHTTYPE DHT22
-#define DHTPIN 0
+#define DHTPIN 2
+
+String VERSION = "3.0";
 
 struct WIFI {
   const char *AP_SSID = "ESP CONFIG";
@@ -49,6 +51,8 @@ void setup() {
   Serial.begin(115200);
   EEPROM.begin(512);
   delay(10);
+  dht.begin();
+  delay(10);
   //reset_config();
   if (EEPROM.read(511) == 0) {
     reset_config();
@@ -80,10 +84,10 @@ void loop() {
       start_web_server();
       info_flag = false;
     }
-    /*unsigned long t_currentMillis = millis();
-      if (t_currentMillis - t_previousMillis >= t_refreshInterval) {
+    unsigned long t_currentMillis = millis();
+    if (t_currentMillis - t_previousMillis >= t_refreshInterval) {
       t_previousMillis = t_currentMillis;
-      }*/
+    }
   }
 }
 
@@ -456,14 +460,18 @@ String config_msg_page() {
 }
 
 String reset_page() {
-  get_val(t_val);
   String s = "<p><b>t:";
   s += t_val[1];
   s += ":h:";
   s += t_val[0];
   s += ":i:";
   s += t_val[2];
-  s += ":<b/></p><p><a href=\"/reset\">Reset WiFi Settings</a></p>";
+  s += ":<b/></p>";
+  s += "<p><a href=\"/reset\">Reset WiFi Settings</a></p>";
+ s += "<p>";
+  s += "Version: ";
+  s += VERSION;
+  s += "</p>";
   return s;
 }
 

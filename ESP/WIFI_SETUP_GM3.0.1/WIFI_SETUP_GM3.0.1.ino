@@ -7,7 +7,10 @@
 #include "DHT.h"
 
 #define DHTTYPE DHT22
-#define DHTPIN 0
+#define DHTPIN 2
+
+
+String VERSION = "3.0.1";
 
 struct WIFI {
   const char *AP_SSID = "ESP CONFIG";
@@ -30,7 +33,7 @@ const IPAddress AP_IP(192, 168, 1, 1);
 
 unsigned long t_previousMillis = 0;
 unsigned long c_previousMillis = 0;
-const long t_refreshInterval = 15000;
+const long t_refreshInterval = 2000;
 const long c_refreshInterval = 30000;
 
 float t_val[3] = {0};
@@ -47,8 +50,11 @@ ESP8266WebServer web_server(80);
 
 void setup() {
   Serial.begin(115200);
+  delay(100);
   EEPROM.begin(512);
-  delay(10);
+  delay(100);
+  dht.begin();
+  delay(200);
   if (restore_config()) {
     if (connect_wifi()) {
       config_mode = false;
@@ -396,7 +402,12 @@ String reset_page() {
   s += t_val[0];
   s += ":i:";
   s += t_val[2];
-  s += ":<b/></p><p><a href=\"/reset\">Reset WiFi Settings</a></p>";
+  s += ":<b/></p>";
+  s += "<p><a href=\"/reset\">Reset WiFi Settings</a></p>";
+  s += "<p>";
+  s += "Version: ";
+  s += VERSION;
+  s += "</p>";
   return s;
 }
 

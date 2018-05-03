@@ -8,7 +8,7 @@ const char* ssid = "0010.0100"; //type your ssid
 const char* password = "summit14";  //type your password
 
 unsigned long previousMillis = 0;
-const long refreshInterval = 10000;
+const long refreshInterval = 5000;
 
 float t_val[3] = {0};
 
@@ -16,7 +16,7 @@ DHT dht(DHTPIN, DHTTYPE);
 WiFiServer server(80);
 
 void setup() {
-  Serial.begin(4800);
+  Serial.begin(115200);
   dht.begin();
   delay(10);
 
