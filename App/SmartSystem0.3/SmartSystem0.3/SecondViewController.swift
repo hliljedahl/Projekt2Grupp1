@@ -9,7 +9,7 @@
 import UIKit
 import Charts
 
-var colorArray = [NSUIColor.red, NSUIColor.purple, NSUIColor.black, NSUIColor.blue, NSUIColor.orange, NSUIColor.green, NSUIColor.darkGray, NSUIColor.brown, NSUIColor.yellow, NSUIColor.cyan]
+var colorArray = [NSUIColor.black, NSUIColor.purple, NSUIColor.red, NSUIColor.blue, NSUIColor.orange, NSUIColor.darkGray, NSUIColor.green, NSUIColor.brown, NSUIColor.yellow, NSUIColor.cyan]
 
 struct Data: Decodable {
 	let sensor_id: String

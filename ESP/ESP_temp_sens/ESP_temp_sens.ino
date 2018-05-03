@@ -2,7 +2,7 @@
 #include "DHT.h"
 
 #define DHTTYPE DHT22
-#define DHTPIN 0
+#define DHTPIN 2
 
 const char* ssid = "0010.0100"; //type your ssid
 const char* password = "summit14";  //type your password
@@ -11,6 +11,7 @@ unsigned long previousMillis = 0;
 const long refreshInterval = 5000;
 
 float t_val[3] = {0};
+double temp = 0;
 
 DHT dht(DHTPIN, DHTTYPE);
 WiFiServer server(80);
@@ -78,7 +79,11 @@ void loop() {
     client.println("<!DOCTYPE HTML>");
     client.println("<html>");
 
+    
     get_val(t_val);
+
+    temp=Thermister(analogRead(0));
+    Serial.println(temp);
     client.print("<b>");
     client.print("t:");
     client.print(t_val[1]);
@@ -86,6 +91,8 @@ void loop() {
     client.print(t_val[0]);
     client.print(":i:");
     client.print(t_val[2]);
+    client.print(":t2:");
+    client.print(temp);
     client.print(":");
     client.print("</b>");
     client.println("<br><br>");
@@ -110,6 +117,18 @@ void get_val(float t_val[]) {
   t_val[2] = dht.computeHeatIndex(t_val[1], t_val[0], false);
 }
 
+void tempSens(double temp) {
+  
+  int val=analogRead(0);      //Read the analog port 0 and store the value in val
+  temp=Thermister(val);
+  
+}
 
-
-
+double Thermister(int RawADC) {  //Function to perform the fancy math of the Steinhart-Hart equation
+ double Temp;
+ Temp = log(((10240000/RawADC) - 10000));
+ Temp = 1 / (0.001129148 + (0.000234125 + (0.0000000876741 * Temp * Temp ))* Temp );
+ Temp = Temp - 273.15;              // Convert Kelvin to Celsius
+ //Temp = (Temp * 9.0)/ 5.0 + 32.0; // Celsius to Fahrenheit - comment out this line if you need Celsius
+ return Temp;
+}

@@ -1,0 +1,13 @@
+# Uncomment the next line to define a global platform for your project
+# platform :ios, '9.0'
+
+target 'SmartSystem0.3' do
+  # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for SwiftyStats
+    pod 'Charts'
+    pod 'DropDown'
+    pod 'UIDropDown'
+
+end
