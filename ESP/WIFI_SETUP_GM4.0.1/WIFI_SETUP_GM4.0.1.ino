@@ -8,7 +8,7 @@
 
 #define TIME_OUT 30
 
-String VERSION = "3.0.3";
+String VERSION = "4.0.1";
 
 struct WIFI {
   const char *AP_SSID = "ESP CONFIG";

@@ -66,7 +66,7 @@ void setup() {
 }
 
 void loop() {
-  Serial.println("Handle client");
+  //Serial.println("Handle client");
   if (config_mode) {
     dns_server.processNextRequest();
   }
@@ -91,29 +91,6 @@ void loop() {
       get_val(t_val);
     }
   }
-}
-
-void send_erase_msg() {
-  Serial.println("");
-  Serial.print("Remove: ");
-  Serial.println(node.ip);
-  msg = "http://www.lonelycircuits.se/data/remove_sensor_ip.php?ip=";
-  msg += node.ip;
-  HTTPClient http;  //Declare object of class HTTPClient
-  http.begin(msg);  //Specify request destination
-  http.addHeader("Content-Type", "text/plain");  //Specify content-type header
-  int httpCode = http.POST(msg);  //Send the request
-  String payload = http.getString();  //Get the response payload
-  Serial.println("________________________________");
-  Serial.print("HTTP return code: ");
-  Serial.println(httpCode);
-  Serial.println("");
-  Serial.println("Request response payload: ");
-  Serial.println(payload);
-  Serial.println("_________________________________");
-  Serial.println("(Close connection)");
-  http.end();
-  delay(500);
 }
 
 void start_web_server() {
@@ -148,6 +125,29 @@ void start_web_server() {
 }
 
 //################################## Database message #####################################
+
+void send_erase_msg() {
+  Serial.println("");
+  Serial.print("Remove: ");
+  Serial.println(node.ip);
+  msg = "http://www.lonelycircuits.se/data/remove_sensor_ip.php?ip=";
+  msg += node.ip;
+  HTTPClient http;  //  Declare object of class HTTPClient
+  http.begin(msg);  //  Specify request destination
+  http.addHeader("Content-Type", "text/plain");  //Specify content-type header
+  int httpCode = http.POST(msg);  //  Send the request and get return code
+  String payload = http.getString();  //  Get the response payload
+  Serial.println("________________________________");
+  Serial.print("HTTP return code: ");
+  Serial.println(httpCode);
+  Serial.println("");
+  Serial.println("Request response payload: ");
+  Serial.println(payload);
+  Serial.println("_________________________________");
+  Serial.println("(Close connection)");
+  http.end();
+  delay(500);
+}
 
 void send_reset_msg() {
   node.humi_name = "";
