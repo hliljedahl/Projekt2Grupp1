@@ -1,3 +1,14 @@
+/*
+
+Arvid Persson 
+
+Version 4.0.1 
+Fungerar: OK
+
+*/
+
+
+
 #include <ESP8266WiFi.h>
 #include <DNSServer.h>
 #include <WiFiClient.h>
