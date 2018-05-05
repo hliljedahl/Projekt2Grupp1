@@ -21,6 +21,7 @@ String VERSION = "4.0.2";
 
 struct WIFI {
   const char *AP_SSID = "ESP CONFIG";
+  const char *PASS = "1357";
   String ssid = "";
   String pass = "";
 };
@@ -168,6 +169,7 @@ void send_reset_msg() {
   Serial.print("Remove temperature sensor: ");
   Serial.println(node.temp_name);
   Serial.println("___________________________________________");
+  // Need OK from server
   delay(500);
 }
 
