@@ -66,7 +66,7 @@ void setup() {
 }
 
 void loop() {
-  //Serial.println("Handle client");
+  Serial.println("Handle client");
   if (config_mode) {
     dns_server.processNextRequest();
   }
@@ -193,8 +193,10 @@ void send_info_msg() {
     HTTPClient http;
     http.begin(msg);
     http.addHeader("Content-Type", "text/plain");
+    
     int httpCode = http.POST(msg);
     String payload = http.getString();
+    
     Serial.println("__________________________________");
     Serial.print("HTTP return code: ");
     Serial.println(httpCode);
@@ -203,6 +205,7 @@ void send_info_msg() {
     Serial.println(payload);
     Serial.println("___________________________________");
     Serial.println("(Close connection)");
+
     http.end();
     delay(200);
   }
@@ -303,6 +306,7 @@ void reset_config() {
     EEPROM.write(i, 0);
   }
   EEPROM.commit();
+  delay(100);
   Serial.println("Config erased");
 }
 
