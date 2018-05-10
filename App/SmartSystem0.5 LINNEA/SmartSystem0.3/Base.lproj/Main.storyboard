@@ -18,9 +18,41 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="TempNHum3" translatesAutoresizingMaskIntoConstraints="NO" id="01s-hA-nAg">
-                                <rect key="frame" x="0.0" y="120" width="768" height="855"/>
+                                <rect key="frame" x="0.0" y="20" width="768" height="855"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Update interval:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2F4-Mo-aaB">
+                                <rect key="frame" x="80" y="764" width="254" height="21"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Time interval:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="I03-El-m7A">
+                                <rect key="frame" x="471" y="764" width="264" height="21"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <webView userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="wVv-eN-sXt">
+                                <rect key="frame" x="91" y="845" width="162" height="100"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" red="0.36078431370000003" green="0.38823529410000002" blue="0.4039215686" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </webView>
+                            <webView userInteractionEnabled="NO" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="TO0-B6-Juc">
+                                <rect key="frame" x="479" y="845" width="162" height="100"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <color key="backgroundColor" red="0.36078431370000003" green="0.38823529410000002" blue="0.4039215686" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                            </webView>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="MZz-hH-h6K">
+                                <rect key="frame" x="345" y="814" width="57" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="UPDATE"/>
+                                <connections>
+                                    <action selector="updateBut:" destination="9pv-A4-QxB" eventType="touchUpInside" id="Uiz-Aa-z1I"/>
+                                </connections>
+                            </button>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" translatesAutoresizingMaskIntoConstraints="NO" id="u6c-u5-2Hi">
                                 <rect key="frame" x="0.0" y="20" width="768" height="50"/>
                                 <subviews>
@@ -96,36 +128,21 @@
                                     </button>
                                 </subviews>
                             </stackView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Time intervall: null" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2F4-Mo-aaB">
-                                <rect key="frame" x="90" y="149" width="138" height="21"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Update intervall: null" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="I03-El-m7A">
-                                <rect key="frame" x="505" y="148" width="157" height="21"/>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="1Ww-xJ-L3U">
+                                <rect key="frame" x="284" y="891" width="178" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <wkWebView contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="saU-Lc-4H6">
-                                <rect key="frame" x="518" y="837" width="240" height="128"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <color key="backgroundColor" red="0.36078431370000003" green="0.38823529410000002" blue="0.4039215686" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <wkWebViewConfiguration key="configuration">
-                                    <audiovisualMediaTypes key="mediaTypesRequiringUserActionForPlayback" none="YES"/>
-                                    <wkPreferences key="preferences"/>
-                                </wkWebViewConfiguration>
-                            </wkWebView>
+                                <state key="normal" title="GET CURRENT SETTINGS"/>
+                                <connections>
+                                    <action selector="currentBut:" destination="9pv-A4-QxB" eventType="touchUpInside" id="dls-Qt-qX7"/>
+                                    <action selector="updateBut:" destination="9pv-A4-QxB" eventType="touchUpInside" id="T03-3a-Lat"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="u6c-u5-2Hi" firstAttribute="leading" secondItem="PQr-Ze-W5v" secondAttribute="leading" id="GXG-WB-nau"/>
                             <constraint firstItem="PQr-Ze-W5v" firstAttribute="trailing" secondItem="u6c-u5-2Hi" secondAttribute="trailing" id="U24-Zd-YHk"/>
-                            <constraint firstItem="2F4-Mo-aaB" firstAttribute="top" secondItem="u6c-u5-2Hi" secondAttribute="bottom" constant="80" id="ck2-di-w6t"/>
                             <constraint firstItem="u6c-u5-2Hi" firstAttribute="top" secondItem="PQr-Ze-W5v" secondAttribute="top" id="ega-yO-kP5"/>
-                            <constraint firstItem="2F4-Mo-aaB" firstAttribute="leading" secondItem="PQr-Ze-W5v" secondAttribute="leading" constant="100" id="sLi-o8-ANK"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="PQr-Ze-W5v"/>
                     </view>
@@ -133,7 +150,8 @@
                     <connections>
                         <outlet property="labelInt" destination="2F4-Mo-aaB" id="L83-19-Xrp"/>
                         <outlet property="labelUpd" destination="I03-El-m7A" id="zDQ-9F-ThV"/>
-                        <outlet property="webView" destination="saU-Lc-4H6" id="lXn-uI-5ia"/>
+                        <outlet property="webView" destination="wVv-eN-sXt" id="XqS-UW-aiy"/>
+                        <outlet property="webView2" destination="TO0-B6-Juc" id="TLw-JM-n6w"/>
                         <outletCollection property="Names" destination="SaE-GR-bvs" collectionClass="NSMutableArray" id="jgA-Eq-XDJ"/>
                         <outletCollection property="Names" destination="Tcd-KK-B3A" collectionClass="NSMutableArray" id="k2O-4u-d5U"/>
                         <outletCollection property="Names" destination="Se7-5N-aQz" collectionClass="NSMutableArray" id="Iwt-L7-FPa"/>

@@ -116,4 +116,44 @@ func updateSensor(){
 	
 }
 
+func updateInst(){
+	
+	let jsonUrlString = "http://lonelycircuits.se/data/json_inst.php"
+	guard let url = URL(string: jsonUrlString) else { return }
+	
+	URLSession.shared.dataTask(with: url) { (data, response, err) in
+		//perhaps check err
+		//also perhaps check response status 200 OK
+		
+		guard let data = data else { return }
+		
+		do {
+			
+			let instvalues = try JSONDecoder().decode([Inst].self, from: data)
+			
+			//print(datavalues[1].value)
+			//var test = [String]()
+			
+			instVal = instvalues
+			
+			for i in 0..<instVal.count {
+				
+				instMax.append(String(instVal[i].max))
+				//print(zoneVal[i].room_des)
+				//print(zoneNames[i])
+			}
+
+			
+			
+		} catch let jsonErr {
+			print("Error serializing json:", jsonErr)
+		}
+		
+		
+		
+		}.resume()
+	// Do any additional setup after loading the view, typically from a nib.
+	
+}
+
 

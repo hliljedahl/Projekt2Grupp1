@@ -97,7 +97,7 @@ class SecondViewController: UIViewController{
 		var numbers = [Double]()
 		
 		updateData()
-		
+		updateInst()
 		
 		
 		//var input = [Double]()

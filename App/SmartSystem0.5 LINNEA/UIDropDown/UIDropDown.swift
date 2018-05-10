@@ -104,7 +104,7 @@ public class UIDropDown: UIControl {
 	
 	// Table Configurations
 	public var animationType: UIDropDownAnimationType = .Default
-	public var tableHeight: CGFloat = 200.0
+	public var tableHeight: CGFloat = 150.0
 	public var rowHeight: CGFloat?
 	public var rowBackgroundColor: UIColor?
 	

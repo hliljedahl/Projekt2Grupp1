@@ -14,7 +14,7 @@ class ThirdViewController: UIViewController {
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
-
+		updateInst()
 	}
 	
 	override func didReceiveMemoryWarning() {
