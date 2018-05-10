@@ -4,13 +4,9 @@
 #include <ESP8266HTTPClient.h>
 #include <EEPROM.h>
 #include <ESP8266WebServer.h>
-#include "DHT.h"
+#include "DHTesp.h"
 
-#define DHTTYPE DHT22
-#define DHTPIN 2
-
-
-String VERSION = "3.0.1";
+String VERSION = "4.0";
 
 struct WIFI {
   const char *AP_SSID = "ESP CONFIG";
@@ -32,9 +28,7 @@ NODE node;
 const IPAddress AP_IP(192, 168, 1, 1);
 
 unsigned long t_previousMillis = 0;
-unsigned long c_previousMillis = 0;
-const long t_refreshInterval = 2000;
-const long c_refreshInterval = 30000;
+const long t_refreshInterval = 45000;
 
 float t_val[3] = {0};
 
@@ -44,17 +38,22 @@ boolean info_flag;
 String network_list;
 String msg;
 
-DHT dht(DHTPIN, DHTTYPE);
 DNSServer dns_server;
 ESP8266WebServer web_server(80);
+DHTesp sensor;
 
 void setup() {
+  delay(1000);
   Serial.begin(115200);
-  delay(100);
+  delay(500);
   EEPROM.begin(512);
-  delay(100);
-  dht.begin();
-  delay(200);
+  delay(500);
+  sensor.setup(2);
+  delay(500);
+  //reset_config();
+  if (EEPROM.read(511) == 0) {
+    reset_config();
+  }
   if (restore_config()) {
     if (connect_wifi()) {
       config_mode = false;
@@ -67,15 +66,24 @@ void setup() {
 }
 
 void loop() {
+  Serial.println("Handle client");
   if (config_mode) {
     dns_server.processNextRequest();
   }
   web_server.handleClient();
   if (!config_mode) {
     if (info_flag) {
+      EEPROM.write(511, 1);
+      delay(10);
+      EEPROM.commit();
+      delay(200);
+      save_node_info();
+      send_erase_msg();
       send_info_msg();
       start_web_server();
       info_flag = false;
+      check_wifi_connection();
+      delay(100);
     }
     unsigned long t_currentMillis = millis();
     if (t_currentMillis - t_previousMillis >= t_refreshInterval) {
@@ -85,11 +93,79 @@ void loop() {
   }
 }
 
+void start_web_server() {
+  if (config_mode) {
+    web_server.on("/settings", []() {
+      web_server.send(200, "text/html", make_page("", config_page()));
+    });
+    web_server.on("/config", []() {
+      config_wifi();
+      init_setup();
+    });
+    web_server.onNotFound([]() {
+      web_server.send(200, "text/html", make_page("", config_msg_page()));
+    });
+  }
+  else {
+    node.ip = WiFi.localIP().toString();
+    Serial.print("Starting Web Server at ");
+    Serial.println(node.ip);
+    web_server.on("/", []() {
+      web_server.send(200, "text/html", make_page("", reset_page()));
+    });
+    web_server.on("/reset", []() {
+      info_flag = true;
+      web_server.send(200, "text/html", make_page("", reset_msg_page()));
+      send_reset_msg();
+      reset_config();
+      init_setup();
+    });
+  }
+  web_server.begin();
+}
+
+//################################## Database message #####################################
+
+void send_erase_msg() {
+  Serial.println("");
+  Serial.print("Remove: ");
+  Serial.println(node.ip);
+  msg = "http://www.lonelycircuits.se/data/remove_sensor_ip.php?ip=";
+  msg += node.ip;
+  HTTPClient http;  //  Declare object of class HTTPClient
+  http.begin(msg);  //  Specify request destination
+  http.addHeader("Content-Type", "text/plain");  //Specify content-type header
+  int httpCode = http.POST(msg);  //  Send the request and get return code
+  String payload = http.getString();  //  Get the response payload
+  Serial.println("________________________________");
+  Serial.print("HTTP return code: ");
+  Serial.println(httpCode);
+  Serial.println("");
+  Serial.println("Request response payload: ");
+  Serial.println(payload);
+  Serial.println("_________________________________");
+  Serial.println("(Close connection)");
+  http.end();
+  delay(500);
+}
+
 void send_reset_msg() {
+  node.humi_name = "";
+  node.temp_name = "";
+  for (int i = 150; i < 200; i++) {
+    node.humi_name += char(EEPROM.read(i));
+  }
+  for (int i = 200; i < 250; i++) {
+    node.temp_name += char(EEPROM.read(i));
+  }
+  Serial.println("_______________________________");
   Serial.println("Sending reset message to database");
-
-  delay(2000);
-
+  Serial.print("Remove humidity sensor: ");
+  Serial.println(node.humi_name);
+  Serial.print("Remove temperature sensor: ");
+  Serial.println(node.temp_name);
+  Serial.println("________________________________");
+  delay(500);
 }
 
 void send_info_msg() {
@@ -114,25 +190,28 @@ void send_info_msg() {
       msg += "\"&ip=";
       msg += node.ip;
     }
-    HTTPClient http;  //Declare object of class HTTPClient
-    http.begin(msg);  //Specify request destination
-    http.addHeader("Content-Type", "text/plain");  //Specify content-type header
-    //Serial.print("Msg: ");
-    //Serial.println(msg);
-    int httpCode = http.POST(msg);  //Send the request
-    String payload = http.getString();  //Get the response payload
-    Serial.println("____________________________________________________________________________________________________");
+    HTTPClient http;
+    http.begin(msg);
+    http.addHeader("Content-Type", "text/plain");
+    
+    int httpCode = http.POST(msg);
+    String payload = http.getString();
+    
+    Serial.println("__________________________________");
     Serial.print("HTTP return code: ");
     Serial.println(httpCode);
     Serial.println("");
     Serial.print("Request response payload: ");
     Serial.println(payload);
-    Serial.println("____________________________________________________________________________________________________");
+    Serial.println("___________________________________");
     Serial.println("(Close connection)");
+
     http.end();
     delay(200);
   }
 }
+
+//################################### Wifi connection #####################################
 
 bool check_wifi_connection() {
   int c = 0;
@@ -173,36 +252,7 @@ boolean connect_wifi() {
   return false;
 }
 
-void start_web_server() {
-  if (config_mode) {
-    web_server.on("/settings", []() {
-      web_server.send(200, "text/html", make_page("", config_page()));
-    });
-    web_server.on("/config", []() {
-      config_wifi();
-      init_setup();
-    });
-    web_server.onNotFound([]() {
-      web_server.send(200, "text/html", make_page("", config_msg_page()));
-    });
-  }
-  else {
-    node.ip = WiFi.localIP().toString();
-    Serial.print("Starting Web Server at ");
-    Serial.println(node.ip);
-    web_server.on("/", []() {
-      web_server.send(200, "text/html", make_page("", reset_page()));
-    });
-    web_server.on("/reset", []() {
-      info_flag = true;
-      web_server.send(200, "text/html", make_page("", reset_msg_page()));
-      send_reset_msg();
-      reset_config();
-      init_setup();
-    });
-  }
-  web_server.begin();
-}
+//############################### Setup AP & wifi config ##################################
 
 void config_wifi() {
   for (int i = 0; i < 96; i++) {
@@ -223,6 +273,41 @@ void config_wifi() {
   print_config(wifi.ssid, wifi.pass, node.temp_name, node.humi_name, node.zone);
   web_server.send(200, "text/html", make_page("", complete_msg_page()));
   restore_config();
+}
+
+void setup_ap() {
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+  delay(100);
+  int nr = WiFi.scanNetworks();
+  delay(10);
+  Serial.println("");
+  for (int i = 0; i < nr; i++) {
+    network_list += "<option value=\"";
+    network_list += WiFi.SSID(i);
+    network_list += "\">";
+    network_list += WiFi.SSID(i);
+    network_list += "</option>";
+  }
+  delay(5);
+  WiFi.mode(WIFI_AP);
+  WiFi.softAPConfig(AP_IP, AP_IP, IPAddress(255, 255, 255, 0));
+  WiFi.softAP(wifi.AP_SSID);
+  dns_server.start(53, "*", AP_IP);
+  start_web_server();
+  Serial.print("Access Point: ");
+  Serial.println(wifi.AP_SSID);
+}
+
+//############################## Erase, save & restore ##################################
+
+void reset_config() {
+  for (int i = 0; i < 512; i++) {
+    EEPROM.write(i, 0);
+  }
+  EEPROM.commit();
+  delay(100);
+  Serial.println("Config erased");
 }
 
 boolean restore_config() {
@@ -251,42 +336,60 @@ boolean restore_config() {
   }
 }
 
-void setup_ap() {
-  WiFi.mode(WIFI_STA);
-  WiFi.disconnect();
-  delay(100);
-  int nr = WiFi.scanNetworks();
-  delay(10);
-  Serial.println("");
-  for (int i = 0; i < nr; i++) {
-    network_list += "<option value=\"";
-    network_list += WiFi.SSID(i);
-    network_list += "\">";
-    network_list += WiFi.SSID(i);
-    network_list += "</option>";
+void save_node_info() {
+  Serial.println();
+  Serial.println("Save node info");
+  Serial.println("__________________________");
+  Serial.print("Humidity sensor: ");
+  Serial.println(node.humi_name);
+  Serial.print("Temperature sensor: ");
+  Serial.println(node.temp_name);
+  Serial.println("__________________________");
+  for (int i = 0; i < string_length(node.humi_name); i++) {
+    EEPROM.write(150 + i, node.humi_name[i]);
   }
-  delay(5);
-  WiFi.mode(WIFI_AP);
-  WiFi.softAPConfig(AP_IP, AP_IP, IPAddress(255, 255, 255, 0));
-  WiFi.softAP(wifi.AP_SSID);
-  dns_server.start(53, "*", AP_IP);
-  start_web_server();
-  Serial.print("Access Point: ");
-  Serial.println(wifi.AP_SSID);
+  for (int i = 0; i < string_length(node.temp_name); i++) {
+    EEPROM.write(200 + i, node.temp_name[i]);
+  }
+  EEPROM.commit();
 }
+
+//################################################################################
 
 void init_setup() {
   if (restore_config()) {
     if (connect_wifi()) {
       config_mode = false;
       start_web_server();
-      //return;
+      //return; b
     }
   } else {
     config_mode = true;
     setup_ap();
   }
 }
+
+void get_val(float t_val[]) {
+  Serial.println("Refresh Temp");
+
+  float humidity = sensor.getHumidity();
+  float temperature = sensor.getTemperature();
+
+  t_val[0] = sensor.getHumidity();
+  t_val[1] = sensor.getTemperature();
+  t_val[2] = sensor.computeHeatIndex(temperature, humidity, false);
+}
+
+int string_length(String str) {
+  int c = 0;
+  str += '\n';
+  while (str[c] != '\n') {
+    c++;
+  }
+  return c;
+}
+
+//################################################################################
 
 String url_decode(String input) {
   String s = input;
@@ -323,13 +426,7 @@ String url_decode(String input) {
   return s;
 }
 
-void reset_config() {
-  for (int i = 0; i < 96; i++) {
-    EEPROM.write(i, 0);
-  }
-  EEPROM.commit();
-  Serial.println("Config erased");
-}
+//################################################################################
 
 void print_config(String ssid, String password, String node1_name,  String node2_name, String zone) {
   Serial.println("Writing EEPROM...");
@@ -350,24 +447,6 @@ void print_config(String ssid, String password, String node1_name,  String node2
   Serial.print("Zone: ");
   Serial.println(zone);
   Serial.println("____________________");
-}
-void get_val(float t_val[]) {
-  Serial.println("Refresh Temp");
-  if (isnan(t_val[0]) || isnan(t_val[1])) {
-    return;
-  }
-  t_val[0] = dht.readHumidity();
-  t_val[1] = dht.readTemperature();
-  t_val[2] = dht.computeHeatIndex(t_val[1], t_val[0], false);
-}
-
-int string_length(String str) {
-  int c = 0;
-  str += '\n';
-  while (str[c] != '\n') {
-    c++;
-  }
-  return c;
 }
 
 //##################################### HTML #####################################
@@ -408,6 +487,12 @@ String reset_page() {
   s += "Version: ";
   s += VERSION;
   s += "</p>";
+  s += "<p>";
+  s += "Name: ";
+  s += node.temp_name;
+  s += " & ";
+  s += node.humi_name;
+  s += "</p>";
   return s;
 }
 
@@ -441,7 +526,7 @@ String config_page() {
   s += "</select>";
   s += "<br>";
   s += "<Strong><label>Password:</label></Strong>";
-  s += "<span style=\"padding-left:29px\">"; 
+  s += "<span style=\"padding-left:29px\">";
   s += "<input length=64 type=\"password\" name=\"pass\" id=\"pass\">";
   s += "<br>";
   s += "<font color=\"white\" size=\"2\">Show Password</font>";
