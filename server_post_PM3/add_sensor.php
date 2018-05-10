@@ -1,11 +1,16 @@
 <?php
+
+//******************************************************************************
+//http://www.lonelycircuits.se/data/add_sensor.php?zone=XXX&name="YYY"&type="ZZZ"&ip=XYZ
+//******************************************************************************
+
     // Connect to MySQL
     include("connect.php");
 
     $sensor_name = $_GET["name"];
     $zone_name = $_GET["zone"];
     $type_name = $_GET["type"];
-    $type_name = $_GET["type"];
+    //$type_name = $_GET["type"];
     $ipadress  = $_GET["ip"];
 
     //echo $zone_name;

@@ -1,4 +1,9 @@
 <?php
+
+//******************************************************************************
+//http://www.lonelycircuits.se/data/remove_sensor.php?remove=XX
+//******************************************************************************
+
     // Connect to MySQL
     include("connect.php");
 
@@ -17,7 +22,6 @@
     //Add new column with the ID from Dev01
     //$sql_rem = "ALTER TABLE  data01 DROP $zoneRemove";
 
-    //http://www.lonelycircuits.se/data/remove_sensors.php?remove=XX
 
     // Execute SQL statement
     if(mysqli_query($conn,$sql_s_del)){

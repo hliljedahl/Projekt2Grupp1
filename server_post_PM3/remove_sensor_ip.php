@@ -1,4 +1,9 @@
 <?php
+
+//******************************************************************************
+//http://www.lonelycircuits.se/data/remove_sensors_ip.php?ip=XX
+//******************************************************************************
+
     // Connect to MySQL
     include("connect.php");
 
@@ -24,7 +29,7 @@
 
         if(mysqli_query($conn,$sql_s_del)){
 
-            echo "Sensor: ";
+            echo "Sensor with ip: ";
             echo $sensorRemove;
             echo " removed";
             mysqli_query($conn,$sql_d_del);
