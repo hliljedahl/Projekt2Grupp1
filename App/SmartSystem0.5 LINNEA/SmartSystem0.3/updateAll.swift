@@ -29,6 +29,8 @@ func updateZones(){
 			//var test = [String]()
 			
 			zoneVal = zonevalues
+			
+			
 		//	print(zoneVal)
 			for i in 0..<zoneVal.count {
 				
@@ -42,10 +44,11 @@ func updateZones(){
 			print("Error serializing json:", jsonErr)
 		}
 		
-		
+		//refresh2()
 		
 		}.resume()
 	// Do any additional setup after loading the view, typically from a nib.
+
 	
 }
 func updateData(){

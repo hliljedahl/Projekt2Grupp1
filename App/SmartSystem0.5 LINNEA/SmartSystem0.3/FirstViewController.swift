@@ -73,21 +73,24 @@ class FirstViewController: UIViewController {
 			default:
 				print ("no value")
 		}
-		let maxIn = (Int(instVal[0].updte)!/Int(sensVal.count))*maxMin
-		
+		let maxIn = (Int(instVal[0].max)!/Int(sensVal.count))*maxMin
+		print ("*****************************")
+		print (maxIn)
+		print ("*****************************")
+
 		switch maxIn {
-		case 1440:
-			self.labelUpd.text = "Time interval: 1 day"
-		case 2880:
-			self.labelUpd.text = "Time interval: 2 days"
-		case 10080:
-			self.labelUpd.text = "Time interval: 1 week"
-		case 20160:
-			self.labelUpd.text = "Time interval: 2 weeks"
-		case 40320:
-			self.labelUpd.text = "Time interval: 4 weeks"
-		case 80640:
-			self.labelUpd.text = "Time interval: 8 weeks"
+			case 1440:
+				self.labelUpd.text = "Time interval: 1 day"
+			case 2880:
+				self.labelUpd.text = "Time interval: 2 days"
+			case 10080:
+				self.labelUpd.text = "Time interval: 1 week"
+			case 20160:
+				self.labelUpd.text = "Time interval: 2 weeks"
+			case 40320:
+				self.labelUpd.text = "Time interval: 4 weeks"
+			case 80640:
+				self.labelUpd.text = "Time interval: 8 weeks"
 		default:
 			print ("no value")
 		}
@@ -147,8 +150,7 @@ class FirstViewController: UIViewController {
 				//print("Number is 150")
 
 			default:
-				//weburl = preweburl + ubdt + String(1) + app
-				//minutes = 1
+				weburl2 = preweburl
 				print ("no value")
 			}
 		//print(instVal)
@@ -183,7 +185,7 @@ class FirstViewController: UIViewController {
 			weburl2 = preweburl + inst + String(values) + app
 		//print("Number is 150")
 		default:
-			print("Otherwise, do something else.")
+			weburl2 = preweburl
 		}
 		
 		//print(instVal)
