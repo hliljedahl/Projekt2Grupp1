@@ -39,6 +39,7 @@ class SecondViewController: UIViewController{
 
 	@IBOutlet weak var lineChart: LineChartView!
 	@IBOutlet weak var lineChart2: LineChartView!
+	@IBOutlet weak var lineChart3: LineChartView!
 	var drop: UIDropDown!
 	@IBOutlet weak var label: UILabel!
 	
@@ -70,6 +71,11 @@ class SecondViewController: UIViewController{
 		drop = UIDropDown(frame: CGRect(x: 300, y: 200, width: 250, height: 30))
 		drop.center = CGPoint(x: 595, y: 100)
 		drop.placeholder = "Select your zone..."
+		drop.borderColor = UIColor(red: 112/255, green: 182/255, blue: 229/255, alpha: 1)
+		//drop.optionsBorderColor = UIColor(red: 112/255, green: 182/255, blue: 229/255, alpha: 1)
+		drop.optionsTextColor = UIColor(red: 112/255, green: 182/255, blue: 229/255, alpha: 1)
+		drop.textColor = UIColor(red: 112/255, green: 182/255, blue: 229/255, alpha: 1)
+		drop.rowBackgroundColor = UIColor(red: 62/255, green: 101/255, blue: 127/255, alpha: 1)
 		drop.options = zoneNames  //["Mexico", "USA", "England", "France", "Germany", "Spain", "Italy", "Canada"]
 		drop.didSelect { (option, index) in
 			self.label.text = "You just selected zone: \(option)"
@@ -112,6 +118,7 @@ class SecondViewController: UIViewController{
 		
 		let data = LineChartData() //This is the object that will be added to the chart
 		let data2 = LineChartData() //This is the object that will be added to the chart
+		let data3 = LineChartData() //This is the object that will be added to the chart
 		
 		updateSensor()
 		
@@ -119,6 +126,13 @@ class SecondViewController: UIViewController{
 		var place = 1.0
 		
 		placeArr.append(place)
+		
+		var timestmp = [String]()
+
+		
+		if dataVal.count != 0 {
+			timestmp.append(dataVal[0].timestmp)
+		}
 		
 		for val in 1..<dataVal.count {
 			let currentTime = Int(dataVal[val].timestmp)
@@ -134,6 +148,8 @@ class SecondViewController: UIViewController{
 			else {
 				place = place + 1
 				placeArr.append(place)
+				
+				timestmp.append(dataVal[val].timestmp)
 			}
 		}
 		
@@ -200,6 +216,7 @@ class SecondViewController: UIViewController{
 			
 			//print(sensVal[sens].type.characters.first?.description ?? "")
 			var t = "Temp"
+			var h = "Humi"
 			//print(t.characters.first?.description ?? "")
 
 			if sensVal[sens].type.characters.first?.description ?? "" == t.characters.first?.description ?? "" {
@@ -207,20 +224,63 @@ class SecondViewController: UIViewController{
 				line1.colors = [colorArray[col]] //Sets the colour to blue
 				line1.setCircleColor(colorArray[col])
 				data.addDataSet(line1) //Adds the line to the dataSet
-			}else {
+			}else if sensVal[sens].type.characters.first?.description ?? "" == h.characters.first?.description ?? "" {
 				let line2 = LineChartDataSet(values: lineChartEntry, label: sensVal[sens].name) //Here we convert lineChartEntry to a LineChartDataSet
 				line2.colors = [colorArray[col]] //Sets the colour to blue
 				line2.setCircleColor(colorArray[col])
 				data2.addDataSet(line2) //Adds the line to the dataSet
 				
+			}else {
+				let line3 = LineChartDataSet(values: lineChartEntry, label: sensVal[sens].name) //Here we convert lineChartEntry to a LineChartDataSet
+				line3.colors = [colorArray[col]] //Sets the colour to blue
+				line3.setCircleColor(colorArray[col])
+				data3.addDataSet(line3) //Adds the line to the dataSet
+				
 			}
 			
 		}
 		
+		var corTime = [String]()
+		
+		for i in 0..<timestmp.count {
+			//2018-04-04 20:20
+			/*let str : NSMutableString = timestmp[i] as! NSMutableString
+			str.insert("-", at: 4)
+			str.insert("-", at: 6)
+			str.insert(" ", at: 9)
+			str.insert(":", at: 12)
+			print(str)
+			*/
+			var str = timestmp[i]
+			str.insert("-", at: str.index(str.startIndex, offsetBy: 4))
+			str.insert("-", at: str.index(str.startIndex, offsetBy: 7))
+			str.insert(" ", at: str.index(str.startIndex, offsetBy: 10))
+			str.insert(":", at: str.index(str.startIndex, offsetBy: 13))
+			
+			corTime.append(str)
+			
+			
+		}
+			
+			
+		
 		lineChart.data = data //finally - it adds the chart data to the chart and causes an update
 		lineChart.chartDescription?.text = " " // Here we set the description for the graph
+		//X-Axis
+		lineChart.xAxis.valueFormatter = IndexAxisValueFormatter(values: corTime)
+		lineChart.xAxis.granularity = 1
+		
 		lineChart2.data = data2 //finally - it adds the chart data to the chart and causes an update
 		lineChart2.chartDescription?.text = " " // Here we set the description for the graph
+		//X-Axis
+		lineChart2.xAxis.valueFormatter = IndexAxisValueFormatter(values: corTime)
+		lineChart2.xAxis.granularity = 1
+		
+		lineChart3.data = data3 //finally - it adds the chart data to the chart and causes an update
+		lineChart3.chartDescription?.text = " " // Here we set the description for the graph
+		//X-Axis
+		lineChart3.xAxis.valueFormatter = IndexAxisValueFormatter(values: corTime)
+		lineChart3.xAxis.granularity = 1
 
 
 		
