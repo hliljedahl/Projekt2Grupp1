@@ -30,7 +30,7 @@ func updateZones(){
 			
 			zoneVal = zonevalues
 			
-			
+			zoneNames.removeAll()
 		//	print(zoneVal)
 			for i in 0..<zoneVal.count {
 				

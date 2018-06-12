@@ -191,7 +191,7 @@ class ThirdViewController: UIViewController, UITableViewDelegate, UITableViewDat
 				updateZones()
 				updateSensor()
 				
-				var tempID = 0
+				/*var tempID = 0
 				for i in 0..<sensVal.count {
 					if (sensArray[indexPath.row] == sensVal[i].name) {
 						tempID = i
@@ -199,7 +199,7 @@ class ThirdViewController: UIViewController, UITableViewDelegate, UITableViewDat
 				}
 				
 				sensArray.remove(at: indexPath.row)
-				sensVal.remove(at: tempID)
+				sensVal.remove(at: tempID)*/
 				refresh2()
 				
 			}
